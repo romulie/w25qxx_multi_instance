@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2015 - present LibDriver All rights reserved
- * 
+ *
  * The MIT License (MIT)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,7 +19,7 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE. 
+ * SOFTWARE.
  *
  * @file      driver_w25qxx.h
  * @brief     driver w25qxx header file
@@ -208,16 +208,16 @@ typedef enum
  */
 typedef struct w25qxx_handle_s
 {
-    uint8_t (*spi_qspi_init)(void);                                                                    /**< point to a spi_qspi_init function address */
-    uint8_t (*spi_qspi_deinit)(void);                                                                  /**< point to a spi_qspi_deinit function address */
-    uint8_t (*spi_qspi_write_read)(uint8_t instruction, uint8_t instruction_line,
+    uint8_t (*spi_qspi_init)(void* descr);                                                             /**< point to a spi_qspi_init function address */
+    uint8_t (*spi_qspi_deinit)(void* descr);                                                           /**< point to a spi_qspi_deinit function address */
+    uint8_t (*spi_qspi_write_read)(void* descr, uint8_t instruction, uint8_t instruction_line,
                                    uint32_t address, uint8_t address_line, uint8_t address_len,
                                    uint32_t alternate, uint8_t alternate_line, uint8_t alternate_len,
                                    uint8_t dummy, uint8_t *in_buf, uint32_t in_len,
                                    uint8_t *out_buf, uint32_t out_len, uint8_t data_line);             /**< point to a spi_qspi_write_read function address */
-    void (*delay_ms)(uint32_t ms);                                                                     /**< point to a delay_ms function address */
-    void (*delay_us)(uint32_t us);                                                                     /**< point to a delay_us function address */
-    void (*debug_print)(const char *const fmt, ...);                                                   /**< point to a debug_print function address */
+    void (*delay_ms)(void* descr, uint32_t ms);                                                        /**< point to a delay_ms function address */
+    void (*delay_us)(void* descr, uint32_t us);                                                        /**< point to a delay_us function address */
+    void (*debug_print)(void* descr, const char *const fmt, ...);                                      /**< point to a debug_print function address */
     uint8_t inited;                                                                                    /**< inited flag */
     uint16_t type;                                                                                     /**< chip type */
     uint8_t address_mode;                                                                              /**< address mode */
@@ -227,6 +227,7 @@ typedef struct w25qxx_handle_s
     uint8_t spi_qspi;                                                                                  /**< spi qspi interface type */
     uint8_t buf[256 + 6];                                                                              /**< inner buffer */
     uint8_t buf_4k[4096 + 1];                                                                          /**< 4k inner buffer */
+    void* extra;                                                                                       /**< custom descriptor */
 } w25qxx_handle_t;
 
 /**
@@ -311,6 +312,22 @@ typedef struct w25qxx_info_s
  * @note      none
  */
 #define DRIVER_W25QXX_LINK_DEBUG_PRINT(HANDLE, FUC)               (HANDLE)->debug_print = FUC
+
+/**
+ * @brief     link extra custom descriptor
+ * @param[in] HANDLE points to a w25qxx handle structure
+ * @param[in] PTR points to a custom descriptor
+ * @note      none
+ */
+#define DRIVER_W25QXX_LINK_EXTRA_VOID_PTR(HANDLE, PTR)               (HANDLE)->extra = PTR
+
+/**
+ * @brief     Unlink extra custom descriptor
+ * @param[in] HANDLE points to a w25qxx handle structure
+ * @param[in] PTR points to a custom descriptor
+ * @note      none
+ */
+#define DRIVER_W25QXX_UNLINK_EXTRA_VOID_PTR(HANDLE)               (HANDLE)->extra = NULL
 
 /**
  * @}
@@ -895,7 +912,7 @@ uint8_t w25qxx_set_status2(w25qxx_handle_t *handle, uint8_t status);
 uint8_t w25qxx_set_status3(w25qxx_handle_t *handle, uint8_t status);
 
 /**
- * @brief     suspend erase or program 
+ * @brief     suspend erase or program
  * @param[in] *handle points to a w25qxx handle structure
  * @return    status code
  *            - 0 success
@@ -907,7 +924,7 @@ uint8_t w25qxx_set_status3(w25qxx_handle_t *handle, uint8_t status);
 uint8_t w25qxx_erase_program_suspend(w25qxx_handle_t *handle);
 
 /**
- * @brief     resume erase or program 
+ * @brief     resume erase or program
  * @param[in] *handle points to a w25qxx handle structure
  * @return    status code
  *            - 0 success

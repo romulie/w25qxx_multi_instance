@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2015 - present LibDriver All rights reserved
- * 
+ *
  * The MIT License (MIT)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,7 +19,7 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE. 
+ * SOFTWARE.
  *
  * @file      driver_w25qxx_interface.h
  * @brief     driver w25qxx interface header file
@@ -52,24 +52,27 @@ extern "C"{
 
 /**
  * @brief  interface spi qspi bus init
+ * @param[in]  descr - custom descriptor
  * @return status code
  *         - 0 success
  *         - 1 spi qspi init failed
  * @note   none
  */
-uint8_t w25qxx_interface_spi_qspi_init(void);
+uint8_t w25qxx_interface_spi_qspi_init(void* descr);
 
 /**
  * @brief  interface spi qspi bus deinit
+ * @param[in]  descr - custom descriptor
  * @return status code
  *         - 0 success
  *         - 1 spi qspi deinit failed
  * @note   none
  */
-uint8_t w25qxx_interface_spi_qspi_deinit(void);
+uint8_t w25qxx_interface_spi_qspi_deinit(void* descr);
 
 /**
  * @brief      interface spi qspi bus write read
+ * @param[in]  descr - custom descriptor
  * @param[in]  instruction is the sent instruction
  * @param[in]  instruction_line is the instruction phy lines
  * @param[in]  address is the register address
@@ -89,7 +92,7 @@ uint8_t w25qxx_interface_spi_qspi_deinit(void);
  *             - 1 write read failed
  * @note       none
  */
-uint8_t w25qxx_interface_spi_qspi_write_read(uint8_t instruction, uint8_t instruction_line,
+uint8_t w25qxx_interface_spi_qspi_write_read(void* descr, uint8_t instruction, uint8_t instruction_line,
                                              uint32_t address, uint8_t address_line, uint8_t address_len,
                                              uint32_t alternate, uint8_t alternate_line, uint8_t alternate_len,
                                              uint8_t dummy, uint8_t *in_buf, uint32_t in_len,
@@ -97,24 +100,27 @@ uint8_t w25qxx_interface_spi_qspi_write_read(uint8_t instruction, uint8_t instru
 
 /**
  * @brief     interface delay ms
+ * @param[in] descr - custom descriptor
  * @param[in] ms
  * @note      none
  */
-void w25qxx_interface_delay_ms(uint32_t ms);
+void w25qxx_interface_delay_ms(void* descr, uint32_t ms);
 
 /**
  * @brief     interface delay us
+ * @param[in] descr - custom descriptor
  * @param[in] us
  * @note      none
  */
-void w25qxx_interface_delay_us(uint32_t us);
+void w25qxx_interface_delay_us(void* descr, uint32_t us);
 
 /**
  * @brief     interface print format data
+ * @param[in] descr - custom descriptor
  * @param[in] fmt is the format data
  * @note      none
  */
-void w25qxx_interface_debug_print(const char *const fmt, ...);
+void w25qxx_interface_debug_print(void* descr, const char *const fmt, ...);
 /**
  * @}
  */

@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2015 - present LibDriver All rights reserved
- * 
+ *
  * The MIT License (MIT)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,7 +19,7 @@
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE. 
+ * SOFTWARE.
  *
  * @file      driver_w25qxx.c
  * @brief     driver w25qxx source file
@@ -111,8 +111,8 @@
  */
 static uint8_t a_w25qxx_spi_write_read(w25qxx_handle_t *handle, uint8_t *in_buf, uint32_t in_len, uint8_t *out_buf, uint32_t out_len)
 {
-    if (handle->spi_qspi_write_read(0x00, 0x00, 0x00000000, 0x00, 0x00,                /* write read data */
-                                    0x00000000, 0x00, 0x00, 
+    if (handle->spi_qspi_write_read(handle->extra, 0x00, 0x00000000, 0x00, 0x00,                /* write read data */
+                                    0x00000000, 0x00, 0x00,
                                     0x00, in_buf, in_len, out_buf, out_len, 1) != 0)
     {
         return 1;                                                                      /* return error */
@@ -151,8 +151,8 @@ static uint8_t a_w25qxx_qspi_write_read(w25qxx_handle_t *handle, uint8_t instruc
                                         uint8_t dummy, uint8_t *in_buf, uint32_t in_len,
                                         uint8_t *out_buf, uint32_t out_len, uint8_t data_line)
 {
-    if (handle->spi_qspi_write_read(instruction, instruction_line, address, address_line, address_len,        /* write read data */
-                                    alternate, alternate_line, alternate_len, 
+    if (handle->spi_qspi_write_read(handle->extra, instruction, instruction_line, address, address_line, address_len,        /* write read data */
+                                    alternate, alternate_line, alternate_len,
                                     dummy, in_buf, in_len, out_buf, out_len, data_line) != 0)
     {
         return 1;                                                                                             /* return error */
@@ -180,7 +180,7 @@ uint8_t w25qxx_set_dual_quad_spi(w25qxx_handle_t *handle, w25qxx_bool_t enable)
     }
 
     handle->dual_quad_spi_enable = (uint8_t)enable;        /* set enable */
-    
+
     return 0;                                              /* success return 0 */
 }
 
@@ -201,7 +201,7 @@ uint8_t w25qxx_get_dual_quad_spi(w25qxx_handle_t *handle, w25qxx_bool_t *enable)
     }
 
     *enable = (w25qxx_bool_t)(handle->dual_quad_spi_enable);        /* get enable */
-    
+
     return 0;                                                       /* success return 0 */
 }
 
@@ -222,7 +222,7 @@ uint8_t w25qxx_set_type(w25qxx_handle_t *handle, w25qxx_type_t type)
     }
 
     handle->type = (uint16_t)type;       /* set type */
-    
+
     return 0;                            /* success return 0 */
 }
 
@@ -243,7 +243,7 @@ uint8_t w25qxx_get_type(w25qxx_handle_t *handle, w25qxx_type_t *type)
     }
 
     *type = (w25qxx_type_t)(handle->type);        /* get type */
-    
+
     return 0;                                     /* success return 0 */
 }
 
@@ -264,7 +264,7 @@ uint8_t w25qxx_set_interface(w25qxx_handle_t *handle, w25qxx_interface_t interfa
     }
 
     handle->spi_qspi = (uint8_t)interface;        /* set interface */
-    
+
     return 0;                                     /* success return 0 */
 }
 
@@ -285,7 +285,7 @@ uint8_t w25qxx_get_interface(w25qxx_handle_t *handle, w25qxx_interface_t *interf
     }
 
     *interface = (w25qxx_interface_t)(handle->spi_qspi);        /* get interface */
-    
+
     return 0;                                                   /* success return 0 */
 }
 
@@ -305,22 +305,22 @@ uint8_t w25qxx_set_address_mode(w25qxx_handle_t *handle, w25qxx_address_mode_t m
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                               /* check handle */
     {
         return 2;                                                                     /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                          /* check handle initialization */
     {
         return 3;                                                                     /* return error */
     }
     if (handle->type < W25Q256)                                                       /* check type */
     {
-        handle->debug_print("w25qxx: current type can't use this function.\n");       /* current type can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: current type can't use this function.\n");       /* current type can't use this function */
+
         return 4;                                                                     /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                     /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                        /* enable dual quad spi */
@@ -340,8 +340,8 @@ uint8_t w25qxx_set_address_mode(w25qxx_handle_t *handle, w25qxx_address_mode_t m
                                            NULL, 0x00, 0x00);                         /* qspi write read */
             if (res != 0)                                                             /* check result */
             {
-                handle->debug_print("w25qxx: set address mode failed.\n");            /* set address mode failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: set address mode failed.\n");            /* set address mode failed */
+
                 return 1;                                                             /* return error */
             }
         }
@@ -358,8 +358,8 @@ uint8_t w25qxx_set_address_mode(w25qxx_handle_t *handle, w25qxx_address_mode_t m
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);        /* spi write read */
             if (res != 0)                                                             /* check result */
             {
-                handle->debug_print("w25qxx: set address mode failed.\n");            /* set address mode failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: set address mode failed.\n");            /* set address mode failed */
+
                 return 1;                                                             /* return error */
             }
         }
@@ -381,14 +381,14 @@ uint8_t w25qxx_set_address_mode(w25qxx_handle_t *handle, w25qxx_address_mode_t m
                                        NULL, 0x00, 0x00);                             /* qspi write read */
         if (res != 0)                                                                 /* check result */
         {
-            handle->debug_print("w25qxx: set address mode failed.\n");                /* set address mode failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: set address mode failed.\n");                /* set address mode failed */
+
             return 1;                                                                 /* return error */
         }
     }
-    
+
     handle->address_mode = (uint8_t)mode;                                             /* set address mode */
-    
+
     return 0;                                                                         /* success return 0 */
 }
 
@@ -407,14 +407,14 @@ uint8_t w25qxx_get_address_mode(w25qxx_handle_t *handle, w25qxx_address_mode_t *
     if (handle == NULL)                                          /* check handle */
     {
         return 2;                                                /* return error */
-    }   
+    }
     if (handle->inited != 1)                                     /* check handle initialization */
     {
         return 3;                                                /* return error */
     }
 
     *mode = (w25qxx_address_mode_t)(handle->address_mode);       /* get address mode */
-    
+
     return 0;                                                    /* success return 0 */
 }
 
@@ -432,16 +432,16 @@ uint8_t w25qxx_enable_write(w25qxx_handle_t *handle)
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                               /* check handle */
     {
         return 2;                                                                     /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                          /* check handle initialization */
     {
         return 3;                                                                     /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                     /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                        /* enable dual quad spi */
@@ -453,8 +453,8 @@ uint8_t w25qxx_enable_write(w25qxx_handle_t *handle)
                                            NULL, 0x00, 0x00);                         /* qspi write read */
             if (res != 0)                                                             /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                /* write enable failed */
+
                 return 1;                                                             /* return error */
             }
         }
@@ -464,8 +464,8 @@ uint8_t w25qxx_enable_write(w25qxx_handle_t *handle)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);        /* spi write read */
             if (res != 0)                                                             /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                /* write enable failed */
+
                 return 1;                                                             /* return error */
             }
         }
@@ -479,12 +479,12 @@ uint8_t w25qxx_enable_write(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0x00);                             /* qspi write read */
         if (res != 0)                                                                 /* check result */
         {
-            handle->debug_print("w25qxx: write enable failed.\n");                    /* write enable failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                    /* write enable failed */
+
             return 1;                                                                 /* return error */
         }
     }
-    
+
     return 0;                                                                         /* success return 0 */
 }
 
@@ -502,11 +502,11 @@ uint8_t w25qxx_enable_volatile_sr_write(w25qxx_handle_t *handle)
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                                      /* check handle */
     {
         return 2;                                                                            /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                 /* check handle initialization */
     {
         return 3;                                                                            /* return error */
@@ -516,7 +516,7 @@ uint8_t w25qxx_enable_volatile_sr_write(w25qxx_handle_t *handle)
     {
         if (handle->dual_quad_spi_enable != 0)                                               /* enable dual quad spi */
         {
-            res = a_w25qxx_qspi_write_read(handle, 
+            res = a_w25qxx_qspi_write_read(handle,
                                            W25QXX_COMMAND_VOLATILE_SR_WRITE_ENABLE, 1,
                                            0x00000000, 0x00, 0x00,
                                            0x00000000, 0x00, 0x00,
@@ -524,8 +524,8 @@ uint8_t w25qxx_enable_volatile_sr_write(w25qxx_handle_t *handle)
                                            NULL, 0x00, 0x00);                                /* qspi write read */
             if (res != 0)                                                                    /* check result */
             {
-                handle->debug_print("w25qxx: sr write enable failed.\n");                    /* sr write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: sr write enable failed.\n");                    /* sr write enable failed */
+
                 return 1;                                                                    /* return error */
             }
         }
@@ -535,8 +535,8 @@ uint8_t w25qxx_enable_volatile_sr_write(w25qxx_handle_t *handle)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);               /* spi write read */
             if (res != 0)                                                                    /* check result */
             {
-                handle->debug_print("w25qxx: sr write enable failed.\n");                    /* sr write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: sr write enable failed.\n");                    /* sr write enable failed */
+
                 return 1;                                                                    /* return error */
             }
         }
@@ -550,12 +550,12 @@ uint8_t w25qxx_enable_volatile_sr_write(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0x00);                                    /* qspi write read */
         if (res != 0)                                                                        /* check result */
         {
-            handle->debug_print("w25qxx: sr write enable failed.\n");                        /* sr write enable failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: sr write enable failed.\n");                        /* sr write enable failed */
+
             return 1;                                                                        /* return error */
         }
     }
-    
+
     return 0;                                                                                /* success return 0 */
 }
 
@@ -573,11 +573,11 @@ uint8_t w25qxx_disable_write(w25qxx_handle_t *handle)
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                               /* check handle */
     {
         return 2;                                                                     /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                          /* check handle initialization */
     {
         return 3;                                                                     /* return error */
@@ -594,8 +594,8 @@ uint8_t w25qxx_disable_write(w25qxx_handle_t *handle)
                                            NULL, 0x00, 0x00);                         /* qspi write read */
             if (res != 0)                                                             /* check result */
             {
-                handle->debug_print("w25qxx: write disable failed.\n");               /* write disable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write disable failed.\n");               /* write disable failed */
+
                 return 1;                                                             /* return error */
             }
         }
@@ -605,8 +605,8 @@ uint8_t w25qxx_disable_write(w25qxx_handle_t *handle)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);        /* spi qspi write read */
             if (res != 0)                                                             /* check result */
             {
-                handle->debug_print("w25qxx: write disable failed.\n");               /* write disable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write disable failed.\n");               /* write disable failed */
+
                 return 1;                                                             /* return error */
             }
         }
@@ -620,12 +620,12 @@ uint8_t w25qxx_disable_write(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0x00);                             /* qspi write read */
         if (res != 0)                                                                 /* check result */
         {
-            handle->debug_print("w25qxx: write disable failed.\n");                   /* write disable failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: write disable failed.\n");                   /* write disable failed */
+
             return 1;                                                                 /* return error */
         }
     }
-    
+
     return 0;                                                                         /* success return 0 */
 }
 
@@ -644,11 +644,11 @@ uint8_t w25qxx_get_status1(w25qxx_handle_t *handle, uint8_t *status)
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                            /* check handle */
     {
         return 2;                                                                  /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                       /* check handle initialization */
     {
         return 3;                                                                  /* return error */
@@ -666,20 +666,20 @@ uint8_t w25qxx_get_status1(w25qxx_handle_t *handle, uint8_t *status)
                                            status, 1, 1);                          /* qspi write read */
             if (res != 0)                                                          /* check result */
             {
-                handle->debug_print("w25qxx: get status1 failed.\n");              /* get status1 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");              /* get status1 failed */
+
                 return 1;                                                          /* return error */
             }
         }
         else                                                                       /* single spi */
         {
             buf[0] = W25QXX_COMMAND_READ_STATUS_REG1;                              /* read status1 command */
-            res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 
+            res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf,
                                           1, status, 1);                           /* spi write read */
             if (res != 0)                                                          /* check result */
             {
-                handle->debug_print("w25qxx: get status1 failed.\n");              /* get status1 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");              /* get status1 failed */
+
                 return 1;                                                          /* return error */
             }
         }
@@ -693,12 +693,12 @@ uint8_t w25qxx_get_status1(w25qxx_handle_t *handle, uint8_t *status)
                                        status, 1, 4);                              /* qspi write read */
         if (res != 0)                                                              /* check result */
         {
-            handle->debug_print("w25qxx: get status1 failed.\n");                  /* get status1 failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                  /* get status1 failed */
+
             return 1;                                                              /* return error */
         }
     }
-    
+
     return 0;                                                                      /* success return 0 */
 }
 
@@ -717,11 +717,11 @@ uint8_t w25qxx_get_status2(w25qxx_handle_t *handle, uint8_t *status)
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                            /* check handle */
     {
         return 2;                                                                  /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                       /* check handle initialization */
     {
         return 3;                                                                  /* return error */
@@ -731,7 +731,7 @@ uint8_t w25qxx_get_status2(w25qxx_handle_t *handle, uint8_t *status)
     {
         if (handle->dual_quad_spi_enable != 0)                                     /* enable dual quad spi */
         {
-            res = a_w25qxx_qspi_write_read(handle, 
+            res = a_w25qxx_qspi_write_read(handle,
                                            W25QXX_COMMAND_READ_STATUS_REG2, 1,
                                            0x00000000, 0x00, 0x00,
                                            0x00000000, 0x00, 0x00,
@@ -739,8 +739,8 @@ uint8_t w25qxx_get_status2(w25qxx_handle_t *handle, uint8_t *status)
                                            status, 1, 1);                          /* qspi write read */
             if (res != 0)                                                          /* check result */
             {
-                handle->debug_print("w25qxx: get status2 failed.\n");              /* get status2 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get status2 failed.\n");              /* get status2 failed */
+
                 return 1;                                                          /* return error */
             }
         }
@@ -751,8 +751,8 @@ uint8_t w25qxx_get_status2(w25qxx_handle_t *handle, uint8_t *status)
                                           1, status, 1);                           /* spi write read */
             if (res != 0)                                                          /* check result */
             {
-                handle->debug_print("w25qxx: get status2 failed.\n");              /* get status2 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get status2 failed.\n");              /* get status2 failed */
+
                 return 1;                                                          /* return error */
             }
         }
@@ -766,12 +766,12 @@ uint8_t w25qxx_get_status2(w25qxx_handle_t *handle, uint8_t *status)
                                        status, 1, 4);                              /* qspi write read */
         if (res != 0)                                                              /* check result */
         {
-            handle->debug_print("w25qxx: get status2 failed.\n");                  /* get status2 failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: get status2 failed.\n");                  /* get status2 failed */
+
             return 1;                                                              /* return error */
         }
     }
-    
+
     return 0;                                                                      /* success return 0 */
 }
 
@@ -790,11 +790,11 @@ uint8_t w25qxx_get_status3(w25qxx_handle_t *handle, uint8_t *status)
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                            /* check handle */
     {
         return 2;                                                                  /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                       /* check handle initialization */
     {
         return 3;                                                                  /* return error */
@@ -812,20 +812,20 @@ uint8_t w25qxx_get_status3(w25qxx_handle_t *handle, uint8_t *status)
                                            status, 1, 1);                          /* qspi write read */
             if (res != 0)                                                          /* check result */
             {
-                handle->debug_print("w25qxx: get status3 failed.\n");              /* get status3 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get status3 failed.\n");              /* get status3 failed */
+
                 return 1;                                                          /* return error */
             }
         }
         else                                                                       /* single spi */
         {
             buf[0] = W25QXX_COMMAND_READ_STATUS_REG3;                              /* read status3 command */
-            res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, 
+            res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1,
                                           status, 1);                              /* spi write read */
             if (res != 0)                                                          /* check result */
             {
-                handle->debug_print("w25qxx: get status3 failed.\n");              /* get status3 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get status3 failed.\n");              /* get status3 failed */
+
                 return 1;                                                          /* return error */
             }
         }
@@ -839,12 +839,12 @@ uint8_t w25qxx_get_status3(w25qxx_handle_t *handle, uint8_t *status)
                                        status, 1, 4);                              /* qspi write read */
         if (res != 0)                                                              /* check result */
         {
-            handle->debug_print("w25qxx: get status3 failed.\n");                  /* get status3 failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: get status3 failed.\n");                  /* get status3 failed */
+
             return 1;                                                              /* return error */
         }
     }
-    
+
     return 0;                                                                      /* success return 0 */
 }
 
@@ -866,11 +866,11 @@ uint8_t w25qxx_set_status1(w25qxx_handle_t *handle, uint8_t status)
     uint8_t buf[2];
     uint32_t timeout;
     uint8_t status_check;
-    
+
     if (handle == NULL)                                                                                  /* check handle */
     {
         return 2;                                                                                        /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                             /* check handle initialization */
     {
         return 3;                                                                                        /* return error */
@@ -887,8 +887,8 @@ uint8_t w25qxx_set_status1(w25qxx_handle_t *handle, uint8_t status)
                                            NULL, 0x00, 0x00);                                            /* qspi write read */
             if (res != 0)                                                                                /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                   /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                   /* write enable failed */
+
                 return 1;                                                                                /* return error */
             }
             buf[0] = status;                                                                             /* set status */
@@ -899,11 +899,11 @@ uint8_t w25qxx_set_status1(w25qxx_handle_t *handle, uint8_t status)
                                            NULL, 0x00, 1);                                               /* qspi write read */
             if (res != 0)                                                                                /* check result */
             {
-                handle->debug_print("w25qxx: set status1 failed.\n");                                    /* set status1 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: set status1 failed.\n");                                    /* set status1 failed */
+
                 return 1;                                                                                /* return error */
             }
-            
+
             timeout = 1000;                                                                              /* max 1000 ms */
             while (timeout != 0)                                                                         /* check timeout */
             {
@@ -914,8 +914,8 @@ uint8_t w25qxx_set_status1(w25qxx_handle_t *handle, uint8_t status)
                                               (uint8_t *)&status_check, 1, 1);                           /* qspi write read */
                 if (res != 0)                                                                            /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                /* get status1 failed */
+
                     return 1;                                                                            /* return error */
                 }
                 if ((status_check & 0x01) == 0x00)                                                       /* check status */
@@ -923,12 +923,12 @@ uint8_t w25qxx_set_status1(w25qxx_handle_t *handle, uint8_t status)
                     break;                                                                               /* break */
                 }
                 timeout--;                                                                               /* timeout-- */
-                handle->delay_ms(1);                                                                     /* delay 1 ms */
+                handle->delay_ms(handle->extra, handle->extra, 1);                                                                     /* delay 1 ms */
             }
             if (timeout == 0)                                                                            /* check timeout */
             {
-                handle->debug_print("w25qxx: write status 1 timeout.\n");                                /* write status 1 timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: write status 1 timeout.\n");                                /* write status 1 timeout */
+
                 return 4;                                                                                /* return error */
             }
             else
@@ -942,8 +942,8 @@ uint8_t w25qxx_set_status1(w25qxx_handle_t *handle, uint8_t status)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                           /* spi write read */
             if (res != 0)                                                                                /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                   /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                   /* write enable failed */
+
                 return 1;                                                                                /* return error */
             }
             buf[0] = W25QXX_COMMAND_WRITE_STATUS_REG1;                                                   /* write status1 command */
@@ -951,11 +951,11 @@ uint8_t w25qxx_set_status1(w25qxx_handle_t *handle, uint8_t status)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 2, NULL, 0);                           /* spi write read */
             if (res != 0)                                                                                /* check result */
             {
-                handle->debug_print("w25qxx: set status1 failed.\n");                                    /* set status1 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: set status1 failed.\n");                                    /* set status1 failed */
+
                 return 1;                                                                                /* return error */
             }
-            
+
             timeout = 1000;                                                                              /* max 1000 ms */
             while (timeout != 0)                                                                         /* check timeout */
             {
@@ -964,8 +964,8 @@ uint8_t w25qxx_set_status1(w25qxx_handle_t *handle, uint8_t status)
                                              (uint8_t *)&status_check, 1);                               /* spi write read */
                 if (res != 0)                                                                            /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                /* get status1 failed */
+
                     return 1;                                                                            /* return error */
                 }
                 if ((status_check & 0x01) == 0x00)                                                       /* check status */
@@ -973,12 +973,12 @@ uint8_t w25qxx_set_status1(w25qxx_handle_t *handle, uint8_t status)
                     break;                                                                               /* break */
                 }
                 timeout--;                                                                               /* timeout-- */
-                handle->delay_ms(1);                                                                     /* delay 1 ms */
+                handle->delay_ms(handle->extra, handle->extra, 1);                                                                     /* delay 1 ms */
             }
             if (timeout == 0)                                                                            /* check timeout */
             {
-                handle->debug_print("w25qxx: write status 1 timeout.\n");                                /* write status 1 timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: write status 1 timeout.\n");                                /* write status 1 timeout */
+
                 return 4;                                                                                /* return error */
             }
             else
@@ -996,8 +996,8 @@ uint8_t w25qxx_set_status1(w25qxx_handle_t *handle, uint8_t status)
                                        NULL, 0x00, 0x00);                                                /* qspi write read */
         if (res != 0)                                                                                    /* check result */
         {
-            handle->debug_print("w25qxx: write enable failed.\n");                                       /* write enable failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                       /* write enable failed */
+
             return 1;                                                                                    /* return error */
         }
         buf[0] = status;                                                                                 /* set status */
@@ -1008,11 +1008,11 @@ uint8_t w25qxx_set_status1(w25qxx_handle_t *handle, uint8_t status)
                                        NULL, 0x00, 4);                                                   /* qspi write read */
         if (res != 0)                                                                                    /* check result */
         {
-            handle->debug_print("w25qxx: set status1 failed.\n");                                        /* set status1 failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: set status1 failed.\n");                                        /* set status1 failed */
+
             return 1;                                                                                    /* return error */
         }
-        
+
         timeout = 1000;                                                                                  /* max 1000 ms */
         while (timeout != 0)                                                                             /* check timeout */
         {
@@ -1023,8 +1023,8 @@ uint8_t w25qxx_set_status1(w25qxx_handle_t *handle, uint8_t status)
                                           (uint8_t *)&status_check, 1, 4);                               /* qspi write read */
             if (res != 0)                                                                                /* check result */
             {
-                handle->debug_print("w25qxx: get status1 failed.\n");                                    /* get status1 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                    /* get status1 failed */
+
                 return 1;                                                                                /* return error */
             }
             if ((status_check & 0x01) == 0x00)                                                           /* check status */
@@ -1032,12 +1032,12 @@ uint8_t w25qxx_set_status1(w25qxx_handle_t *handle, uint8_t status)
                 break;                                                                                   /* break */
             }
             timeout--;                                                                                   /* timeout-- */
-            handle->delay_ms(1);                                                                         /* delay 1 ms */
+            handle->delay_ms(handle->extra, handle->extra, 1);                                                                         /* delay 1 ms */
         }
         if (timeout == 0)                                                                                /* check timeout */
         {
-            handle->debug_print("w25qxx: write status 1 timeout.\n");                                    /* write status 1 timeout */
-           
+            handle->debug_print(handle->extra, "w25qxx: write status 1 timeout.\n");                                    /* write status 1 timeout */
+
             return 4;                                                                                    /* return error */
         }
         else
@@ -1065,11 +1065,11 @@ uint8_t w25qxx_set_status2(w25qxx_handle_t *handle, uint8_t status)
     uint8_t buf[2];
     uint32_t timeout;
     uint8_t status_check;
-    
+
     if (handle == NULL)                                                                                  /* check handle */
     {
         return 2;                                                                                        /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                             /* check handle initialization */
     {
         return 3;                                                                                        /* return error */
@@ -1086,8 +1086,8 @@ uint8_t w25qxx_set_status2(w25qxx_handle_t *handle, uint8_t status)
                                            NULL, 0x00, 0x00);                                            /* qspi write read */
             if (res != 0)                                                                                /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                   /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                   /* write enable failed */
+
                 return 1;                                                                                /* return error */
             }
             buf[0] = status;                                                                             /* set status */
@@ -1098,11 +1098,11 @@ uint8_t w25qxx_set_status2(w25qxx_handle_t *handle, uint8_t status)
                                            NULL, 0x00, 1);                                               /* qspi write read */
             if (res != 0)                                                                                /* check result */
             {
-                handle->debug_print("w25qxx: set status2 failed.\n");                                    /* set status2 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: set status2 failed.\n");                                    /* set status2 failed */
+
                 return 1;                                                                                /* return error */
             }
-            
+
             timeout = 1000;                                                                              /* max 1000 ms */
             while (timeout != 0)                                                                         /* check timeout */
             {
@@ -1113,8 +1113,8 @@ uint8_t w25qxx_set_status2(w25qxx_handle_t *handle, uint8_t status)
                                               (uint8_t *)&status_check, 1, 1);                           /* qspi write read */
                 if (res != 0)                                                                            /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                /* get status1 failed */
+
                     return 1;                                                                            /* return error */
                 }
                 if ((status_check & 0x01) == 0x00)                                                       /* check status */
@@ -1122,12 +1122,12 @@ uint8_t w25qxx_set_status2(w25qxx_handle_t *handle, uint8_t status)
                     break;                                                                               /* break */
                 }
                 timeout--;                                                                               /* timeout-- */
-                handle->delay_ms(1);                                                                     /* delay 1 ms */
+                handle->delay_ms(handle->extra, handle->extra, 1);                                                                     /* delay 1 ms */
             }
             if (timeout == 0)                                                                            /* check timeout */
             {
-                handle->debug_print("w25qxx: write status 2 timeout.\n");                                /* write status 2 timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: write status 2 timeout.\n");                                /* write status 2 timeout */
+
                 return 4;                                                                                /* return error */
             }
             else
@@ -1141,8 +1141,8 @@ uint8_t w25qxx_set_status2(w25qxx_handle_t *handle, uint8_t status)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                           /* spi write read */
             if (res != 0)                                                                                /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                   /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                   /* write enable failed */
+
                 return 1;                                                                                /* return error */
             }
             buf[0] = W25QXX_COMMAND_WRITE_STATUS_REG2;                                                   /* write status2 command */
@@ -1150,11 +1150,11 @@ uint8_t w25qxx_set_status2(w25qxx_handle_t *handle, uint8_t status)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 2, NULL, 0);                           /* spi write read */
             if (res != 0)                                                                                /* check result */
             {
-                handle->debug_print("w25qxx: set status2 failed.\n");                                    /* set status2 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: set status2 failed.\n");                                    /* set status2 failed */
+
                 return 1;                                                                                /* return error */
             }
-            
+
             timeout = 1000;                                                                              /* max 1000 ms */
             while (timeout != 0)                                                                         /* check timeout */
             {
@@ -1163,8 +1163,8 @@ uint8_t w25qxx_set_status2(w25qxx_handle_t *handle, uint8_t status)
                                              (uint8_t *)&status_check, 1);                               /* spi write read */
                 if (res != 0)                                                                            /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                /* get status1 failed */
+
                     return 1;                                                                            /* return error */
                 }
                 if ((status_check & 0x01) == 0x00)                                                       /* check status */
@@ -1172,12 +1172,12 @@ uint8_t w25qxx_set_status2(w25qxx_handle_t *handle, uint8_t status)
                     break;                                                                               /* break */
                 }
                 timeout--;                                                                               /* timeout-- */
-                handle->delay_ms(1);                                                                     /* delay 1 ms */
+                handle->delay_ms(handle->extra, handle->extra, 1);                                                                     /* delay 1 ms */
             }
             if (timeout == 0)                                                                            /* check timeout */
             {
-                handle->debug_print("w25qxx: write status 2 timeout.\n");                                /* write status 2 timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: write status 2 timeout.\n");                                /* write status 2 timeout */
+
                 return 4;                                                                                /* return error */
             }
             else
@@ -1195,8 +1195,8 @@ uint8_t w25qxx_set_status2(w25qxx_handle_t *handle, uint8_t status)
                                        NULL, 0x00, 0x00);                                                /* qspi write read */
         if (res != 0)                                                                                    /* check result */
         {
-            handle->debug_print("w25qxx: write enable failed.\n");                                       /* write enable failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                       /* write enable failed */
+
             return 1;                                                                                    /* return error */
         }
         buf[0] = status;                                                                                 /* set status */
@@ -1207,11 +1207,11 @@ uint8_t w25qxx_set_status2(w25qxx_handle_t *handle, uint8_t status)
                                        NULL, 0x00, 4);                                                   /* qspi write read */
         if (res != 0)                                                                                    /* check result */
         {
-            handle->debug_print("w25qxx: set status2 failed.\n");                                        /* set status2 failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: set status2 failed.\n");                                        /* set status2 failed */
+
             return 1;                                                                                    /* return error */
         }
-        
+
         timeout = 1000;                                                                                  /* max 1000 ms */
         while (timeout != 0)                                                                             /* check timeout */
         {
@@ -1222,8 +1222,8 @@ uint8_t w25qxx_set_status2(w25qxx_handle_t *handle, uint8_t status)
                                           (uint8_t *)&status_check, 1, 4);                               /* qspi write read */
             if (res != 0)                                                                                /* check result */
             {
-                handle->debug_print("w25qxx: get status1 failed.\n");                                    /* get status1 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                    /* get status1 failed */
+
                 return 1;                                                                                /* return error */
             }
             if ((status_check & 0x01) == 0x00)                                                           /* check status */
@@ -1231,12 +1231,12 @@ uint8_t w25qxx_set_status2(w25qxx_handle_t *handle, uint8_t status)
                 break;                                                                                   /* break */
             }
             timeout--;                                                                                   /* timeout-- */
-            handle->delay_ms(1);                                                                         /* delay 1 ms */
+            handle->delay_ms(handle->extra, 1);                                                                         /* delay 1 ms */
         }
         if (timeout == 0)                                                                                /* check timeout */
         {
-            handle->debug_print("w25qxx: write status 2 timeout.\n");                                    /* write status 2 timeout */
-           
+            handle->debug_print(handle->extra, "w25qxx: write status 2 timeout.\n");                                    /* write status 2 timeout */
+
             return 4;                                                                                    /* return error */
         }
         else
@@ -1264,11 +1264,11 @@ uint8_t w25qxx_set_status3(w25qxx_handle_t *handle, uint8_t status)
     uint8_t buf[2];
     uint32_t timeout;
     uint8_t status_check;
-    
+
     if (handle == NULL)                                                                                  /* check handle */
     {
         return 2;                                                                                        /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                             /* check handle initialization */
     {
         return 3;                                                                                        /* return error */
@@ -1285,8 +1285,8 @@ uint8_t w25qxx_set_status3(w25qxx_handle_t *handle, uint8_t status)
                                            NULL, 0x00, 0x00);                                            /* qspi write read */
             if (res != 0)                                                                                /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                   /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                   /* write enable failed */
+
                 return 1;                                                                                /* return error */
             }
             buf[0] = status;                                                                             /* set status */
@@ -1297,11 +1297,11 @@ uint8_t w25qxx_set_status3(w25qxx_handle_t *handle, uint8_t status)
                                            NULL, 0x00, 1);                                               /* qspi write read */
             if (res != 0)                                                                                /* check result */
             {
-                handle->debug_print("w25qxx: set status3 failed.\n");                                    /* set status3 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: set status3 failed.\n");                                    /* set status3 failed */
+
                 return 1;                                                                                /* return error */
             }
-            
+
             timeout = 1000;                                                                              /* max 1000 ms */
             while (timeout != 0)                                                                         /* check timeout */
             {
@@ -1312,8 +1312,8 @@ uint8_t w25qxx_set_status3(w25qxx_handle_t *handle, uint8_t status)
                                               (uint8_t *)&status_check, 1, 1);                           /* qspi write read */
                 if (res != 0)                                                                            /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                /* get status1 failed */
+
                     return 1;                                                                            /* return error */
                 }
                 if ((status_check & 0x01) == 0x00)                                                       /* check status */
@@ -1321,12 +1321,12 @@ uint8_t w25qxx_set_status3(w25qxx_handle_t *handle, uint8_t status)
                     break;                                                                               /* break */
                 }
                 timeout--;                                                                               /* timeout-- */
-                handle->delay_ms(1);                                                                     /* delay 1 ms */
+                handle->delay_ms(handle->extra, 1);                                                                     /* delay 1 ms */
             }
             if (timeout == 0)                                                                            /* check timeout */
             {
-                handle->debug_print("w25qxx: write status 3 timeout.\n");                                /* write status 3 timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: write status 3 timeout.\n");                                /* write status 3 timeout */
+
                 return 4;                                                                                /* return error */
             }
             else
@@ -1340,8 +1340,8 @@ uint8_t w25qxx_set_status3(w25qxx_handle_t *handle, uint8_t status)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                           /* spi write read */
             if (res != 0)                                                                                /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                   /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                   /* write enable failed */
+
                 return 1;                                                                                /* return error */
             }
             buf[0] = W25QXX_COMMAND_WRITE_STATUS_REG3;                                                   /* write status3 command */
@@ -1349,11 +1349,11 @@ uint8_t w25qxx_set_status3(w25qxx_handle_t *handle, uint8_t status)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 2, NULL, 0);                           /* spi write read */
             if (res != 0)                                                                                /* check result */
             {
-                handle->debug_print("w25qxx: set status3 failed.\n");                                    /* set status3 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: set status3 failed.\n");                                    /* set status3 failed */
+
                 return 1;                                                                                /* return error */
             }
-            
+
             timeout = 1000;                                                                              /* max 1000 ms */
             while (timeout != 0)                                                                         /* check timeout */
             {
@@ -1362,8 +1362,8 @@ uint8_t w25qxx_set_status3(w25qxx_handle_t *handle, uint8_t status)
                                              (uint8_t *)&status_check, 1);                               /* spi write read */
                 if (res != 0)                                                                            /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                /* get status1 failed */
+
                     return 1;                                                                            /* return error */
                 }
                 if ((status_check & 0x01) == 0x00)                                                       /* check status */
@@ -1371,12 +1371,12 @@ uint8_t w25qxx_set_status3(w25qxx_handle_t *handle, uint8_t status)
                     break;                                                                               /* break */
                 }
                 timeout--;                                                                               /* timeout-- */
-                handle->delay_ms(1);                                                                     /* delay 1 ms */
+                handle->delay_ms(handle->extra, 1);                                                                     /* delay 1 ms */
             }
             if (timeout == 0)                                                                            /* check timeout */
             {
-                handle->debug_print("w25qxx: write status 3 timeout.\n");                                /* write status 3 timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: write status 3 timeout.\n");                                /* write status 3 timeout */
+
                 return 4;                                                                                /* return error */
             }
             else
@@ -1394,8 +1394,8 @@ uint8_t w25qxx_set_status3(w25qxx_handle_t *handle, uint8_t status)
                                        NULL, 0x00, 0x00);                                                /* qspi write read */
         if (res != 0)                                                                                    /* check result */
         {
-            handle->debug_print("w25qxx: write enable failed.\n");                                       /* write enable failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                       /* write enable failed */
+
             return 1;                                                                                    /* return error */
         }
         buf[0] = status;                                                                                 /* set status */
@@ -1406,11 +1406,11 @@ uint8_t w25qxx_set_status3(w25qxx_handle_t *handle, uint8_t status)
                                        NULL, 0x00, 4);                                                   /* qspi write read */
         if (res != 0)                                                                                    /* check result */
         {
-            handle->debug_print("w25qxx: set status3 failed.\n");                                        /* set status3 failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: set status3 failed.\n");                                        /* set status3 failed */
+
             return 1;                                                                                    /* return error */
         }
-        
+
         timeout = 1000;                                                                                  /* max 1000 ms */
         while (timeout != 0)                                                                             /* check timeout */
         {
@@ -1421,8 +1421,8 @@ uint8_t w25qxx_set_status3(w25qxx_handle_t *handle, uint8_t status)
                                           (uint8_t *)&status_check, 1, 4);                               /* qspi write read */
             if (res != 0)                                                                                /* check result */
             {
-                handle->debug_print("w25qxx: get status1 failed.\n");                                    /* get status1 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                    /* get status1 failed */
+
                 return 1;                                                                                /* return error */
             }
             if ((status_check & 0x01) == 0x00)                                                           /* check status */
@@ -1430,12 +1430,12 @@ uint8_t w25qxx_set_status3(w25qxx_handle_t *handle, uint8_t status)
                 break;                                                                                   /* break */
             }
             timeout--;                                                                                   /* timeout-- */
-            handle->delay_ms(1);                                                                         /* delay 1 ms */
+            handle->delay_ms(handle->extra, 1);                                                                         /* delay 1 ms */
         }
         if (timeout == 0)                                                                                /* check timeout */
         {
-            handle->debug_print("w25qxx: write status 3 timeout.\n");                                    /* write status 3 timeout */
-           
+            handle->debug_print(handle->extra, "w25qxx: write status 3 timeout.\n");                                    /* write status 3 timeout */
+
             return 4;                                                                                    /* return error */
         }
         else
@@ -1462,11 +1462,11 @@ uint8_t w25qxx_chip_erase(w25qxx_handle_t *handle)
     uint8_t status;
     uint8_t buf[1];
     uint32_t timeout;
-    
+
     if (handle == NULL)                                                                            /* check handle */
     {
         return 2;                                                                                  /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                       /* check handle initialization */
     {
         return 3;                                                                                  /* return error */
@@ -1483,8 +1483,8 @@ uint8_t w25qxx_chip_erase(w25qxx_handle_t *handle)
                                            NULL, 0x00, 0x00);                                      /* qspi write read */
             if (res != 0)                                                                          /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                             /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                             /* write enable failed */
+
                 return 1;                                                                          /* return error */
             }
             res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_CHIP_ERASE, 1,
@@ -1494,8 +1494,8 @@ uint8_t w25qxx_chip_erase(w25qxx_handle_t *handle)
                                            NULL, 0x00, 0x00);                                      /* qspi write read */
             if (res != 0)                                                                          /* check result */
             {
-                handle->debug_print("w25qxx: chip erase failed.\n");                               /* chip erase failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: chip erase failed.\n");                               /* chip erase failed */
+
                 return 1;                                                                          /* return error */
             }
             timeout = 400 * 1000;                                                                  /* max 400s */
@@ -1508,8 +1508,8 @@ uint8_t w25qxx_chip_erase(w25qxx_handle_t *handle)
                                               (uint8_t *)&status, 1, 1);                           /* qspi write read */
                 if (res != 0)                                                                      /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                          /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                          /* get status1 failed */
+
                     return 1;                                                                      /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                       /* check status */
@@ -1517,12 +1517,12 @@ uint8_t w25qxx_chip_erase(w25qxx_handle_t *handle)
                     break;                                                                         /* break */
                 }
                 timeout--;                                                                         /* timeout-- */
-                handle->delay_ms(1);                                                               /* delay 1 ms */
+                handle->delay_ms(handle->extra, 1);                                                               /* delay 1 ms */
             }
             if (timeout == 0)                                                                      /* check timeout */
             {
-                handle->debug_print("w25qxx: erase timeout.\n");                                   /* erase timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: erase timeout.\n");                                   /* erase timeout */
+
                 return 4;                                                                          /* return error */
             }
             else
@@ -1536,16 +1536,16 @@ uint8_t w25qxx_chip_erase(w25qxx_handle_t *handle)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                     /* spi write read */
             if (res != 0)                                                                          /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                             /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                             /* write enable failed */
+
                 return 1;                                                                          /* return error */
             }
             buf[0] = W25QXX_COMMAND_CHIP_ERASE;                                                    /* chip erase command */
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                     /* spi qspi write read */
             if (res != 0)                                                                          /* check result */
             {
-                handle->debug_print("w25qxx: chip erase failed.\n");                               /* chip erase failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: chip erase failed.\n");                               /* chip erase failed */
+
                 return 1;                                                                          /* return error */
             }
             timeout = 400 * 1000;                                                                  /* max 400s */
@@ -1556,8 +1556,8 @@ uint8_t w25qxx_chip_erase(w25qxx_handle_t *handle)
                                              (uint8_t *)&status, 1);                               /* spi write read */
                 if (res != 0)                                                                      /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                          /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                          /* get status1 failed */
+
                     return 1;                                                                      /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                       /* check status */
@@ -1565,12 +1565,12 @@ uint8_t w25qxx_chip_erase(w25qxx_handle_t *handle)
                     break;                                                                         /* break */
                 }
                 timeout--;                                                                         /* timeout-- */
-                handle->delay_ms(1);                                                               /* delay 1 ms */
+                handle->delay_ms(handle->extra, 1);                                                               /* delay 1 ms */
             }
             if (timeout == 0)                                                                      /* check timeout */
             {
-                handle->debug_print("w25qxx: erase timeout.\n");                                   /* erase timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: erase timeout.\n");                                   /* erase timeout */
+
                 return 4;                                                                          /* return error */
             }
             else
@@ -1588,8 +1588,8 @@ uint8_t w25qxx_chip_erase(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0x00);                                          /* qspi write read */
         if (res != 0)                                                                              /* check result */
         {
-            handle->debug_print("w25qxx: write enable failed.\n");                                 /* write enable failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                 /* write enable failed */
+
             return 1;                                                                              /* return error */
         }
         res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_CHIP_ERASE, 4,
@@ -1599,8 +1599,8 @@ uint8_t w25qxx_chip_erase(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0x00);                                          /* qspi write read */
         if (res != 0)                                                                              /* check result */
         {
-            handle->debug_print("w25qxx: chip erase failed.\n");                                   /* chip erase failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: chip erase failed.\n");                                   /* chip erase failed */
+
             return 1;                                                                              /* return error */
         }
         timeout = 400 * 1000;                                                                      /* max 400s */
@@ -1613,8 +1613,8 @@ uint8_t w25qxx_chip_erase(w25qxx_handle_t *handle)
                                           (uint8_t *)&status, 1, 4);                               /* qspi write read */
             if (res != 0)                                                                          /* check result */
             {
-                handle->debug_print("w25qxx: get status1 failed.\n");                              /* get status1 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                              /* get status1 failed */
+
                 return 1;                                                                          /* return error */
             }
             if ((status & 0x01) == 0x00)                                                           /* check status */
@@ -1622,12 +1622,12 @@ uint8_t w25qxx_chip_erase(w25qxx_handle_t *handle)
                 break;                                                                             /* break */
             }
             timeout--;                                                                             /* timeout-- */
-            handle->delay_ms(1);                                                                   /* delay 1 ms */
+            handle->delay_ms(handle->extra, 1);                                                                   /* delay 1 ms */
         }
         if (timeout == 0)                                                                          /* check timeout */
         {
-            handle->debug_print("w25qxx: erase timeout.\n");                                       /* erase timeout */
-           
+            handle->debug_print(handle->extra, "w25qxx: erase timeout.\n");                                       /* erase timeout */
+
             return 4;                                                                              /* return error */
         }
         else
@@ -1638,7 +1638,7 @@ uint8_t w25qxx_chip_erase(w25qxx_handle_t *handle)
 }
 
 /**
- * @brief     suspend erase or program 
+ * @brief     suspend erase or program
  * @param[in] *handle points to a w25qxx handle structure
  * @return    status code
  *            - 0 success
@@ -1651,16 +1651,16 @@ uint8_t w25qxx_erase_program_suspend(w25qxx_handle_t *handle)
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                                       /* check handle */
     {
         return 2;                                                                             /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                  /* check handle initialization */
     {
         return 3;                                                                             /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                             /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                /* enable dual quad spi */
@@ -1672,8 +1672,8 @@ uint8_t w25qxx_erase_program_suspend(w25qxx_handle_t *handle)
                                            NULL, 0x00, 0x00);                                 /* qspi write read */
             if (res != 0)                                                                     /* check result */
             {
-                handle->debug_print("w25qxx: erase program suspend failed.\n");               /* erase program suspend failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: erase program suspend failed.\n");               /* erase program suspend failed */
+
                 return 1;                                                                     /* return error */
             }
         }
@@ -1683,11 +1683,11 @@ uint8_t w25qxx_erase_program_suspend(w25qxx_handle_t *handle)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                /* spi write read */
             if (res != 0)                                                                     /* check result */
             {
-                handle->debug_print("w25qxx: erase program suspend failed.\n");               /* erase program suspend failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: erase program suspend failed.\n");               /* erase program suspend failed */
+
                 return 1;                                                                     /* return error */
             }
-            
+
             return 0;                                                                         /* success return 0 */
         }
     }
@@ -1700,17 +1700,17 @@ uint8_t w25qxx_erase_program_suspend(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0x00);                                     /* qspi write read */
         if (res != 0)                                                                         /* check result */
         {
-            handle->debug_print("w25qxx: erase program suspend failed.\n");                   /* erase program suspend failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: erase program suspend failed.\n");                   /* erase program suspend failed */
+
             return 1;                                                                         /* return error */
         }
     }
-    
+
     return 0;                                                                                 /* success return 0 */
 }
 
 /**
- * @brief     resume erase or program 
+ * @brief     resume erase or program
  * @param[in] *handle points to a w25qxx handle structure
  * @return    status code
  *            - 0 success
@@ -1723,16 +1723,16 @@ uint8_t w25qxx_erase_program_resume(w25qxx_handle_t *handle)
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                                       /* check handle */
     {
         return 2;                                                                             /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                  /* check handle initialization */
     {
         return 3;                                                                             /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                             /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                /* enable dual quad spi */
@@ -1744,8 +1744,8 @@ uint8_t w25qxx_erase_program_resume(w25qxx_handle_t *handle)
                                            NULL, 0x00, 0x00);                                 /* qspi write read */
             if (res != 0)                                                                     /* check result */
             {
-                handle->debug_print("w25qxx: erase program resume failed.\n");                /* erase program resume failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: erase program resume failed.\n");                /* erase program resume failed */
+
                 return 1;                                                                     /* return error */
             }
         }
@@ -1755,8 +1755,8 @@ uint8_t w25qxx_erase_program_resume(w25qxx_handle_t *handle)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                /* spi write read */
             if (res != 0)                                                                     /* check result */
             {
-                handle->debug_print("w25qxx: erase program resume failed.\n");                /* erase program resume failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: erase program resume failed.\n");                /* erase program resume failed */
+
                 return 1;                                                                     /* return error */
             }
         }
@@ -1770,12 +1770,12 @@ uint8_t w25qxx_erase_program_resume(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0x00);                                     /* qspi write read */
         if (res != 0)                                                                         /* check result */
         {
-            handle->debug_print("w25qxx: erase program resume failed.\n");                    /* erase program resume failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: erase program resume failed.\n");                    /* erase program resume failed */
+
             return 1;                                                                         /* return error */
         }
     }
-    
+
     return 0;                                                                                 /* success return 0 */
 }
 
@@ -1793,11 +1793,11 @@ uint8_t w25qxx_power_down(w25qxx_handle_t *handle)
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                            /* check handle */
     {
         return 2;                                                                  /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                       /* check handle initialization */
     {
         return 3;                                                                  /* return error */
@@ -1814,8 +1814,8 @@ uint8_t w25qxx_power_down(w25qxx_handle_t *handle)
                                            NULL, 0x00, 0x00);                      /* qspi write read */
             if (res != 0)                                                          /* check result */
             {
-                handle->debug_print("w25qxx: power down failed.\n");               /* power down failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: power down failed.\n");               /* power down failed */
+
                 return 1;                                                          /* return error */
             }
         }
@@ -1826,8 +1826,8 @@ uint8_t w25qxx_power_down(w25qxx_handle_t *handle)
                                           1, NULL, 0);                             /* spi write read */
             if (res != 0)                                                          /* check result */
             {
-                handle->debug_print("w25qxx: power down failed.\n");               /* power down failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: power down failed.\n");               /* power down failed */
+
                 return 1;                                                          /* return error */
             }
         }
@@ -1841,11 +1841,11 @@ uint8_t w25qxx_power_down(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0);                             /* spi write read */
         if (res != 0)                                                              /* check result */
         {
-            handle->debug_print("w25qxx: exit qspi mode failed.\n");               /* exit qspi mode failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: exit qspi mode failed.\n");               /* exit qspi mode failed */
+
             return 1;                                                              /* return error */
         }
-        handle->delay_ms(10);                                                      /* delay 10 ms */
+        handle->delay_ms(handle->extra, 10);                                                      /* delay 10 ms */
         res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_POWER_DOWN, 4,
                                        0x00000000, 0x00, 0x00,
                                        0x00000000, 0x00, 0x00,
@@ -1853,12 +1853,12 @@ uint8_t w25qxx_power_down(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0x00);                          /* qspi write read */
         if (res != 0)                                                              /* check result */
         {
-            handle->debug_print("w25qxx: power down failed.\n");                   /* power down failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: power down failed.\n");                   /* power down failed */
+
             return 1;                                                              /* return error */
         }
     }
-    
+
     return 0;                                                                      /* success return 0 */
 }
 
@@ -1877,16 +1877,16 @@ uint8_t w25qxx_release_power_down(w25qxx_handle_t *handle)
     uint8_t res;
     uint8_t id;
     uint8_t buf[4];
-    
+
     if (handle == NULL)                                                                    /* check handle */
     {
         return 2;                                                                          /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                               /* check handle initialization */
     {
         return 3;                                                                          /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                          /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                             /* enable dual quad spi */
@@ -1899,8 +1899,8 @@ uint8_t w25qxx_release_power_down(w25qxx_handle_t *handle)
                                           (uint8_t *)&id, 1, 1);                           /* qspi write read */
             if (res != 0)                                                                  /* check result */
             {
-                handle->debug_print("w25qxx: release power down failed.\n");               /* release power down failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: release power down failed.\n");               /* release power down failed */
+
                 return 1;                                                                  /* return error */
             }
         }
@@ -1913,8 +1913,8 @@ uint8_t w25qxx_release_power_down(w25qxx_handle_t *handle)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 4, (uint8_t *)&id, 1);   /* spi write read */
             if (res != 0)                                                                  /* check result */
             {
-                handle->debug_print("w25qxx: release power down failed.\n");               /* release power down failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: release power down failed.\n");               /* release power down failed */
+
                 return 1;                                                                  /* return error */
             }
         }
@@ -1928,12 +1928,12 @@ uint8_t w25qxx_release_power_down(w25qxx_handle_t *handle)
                                       (uint8_t *)&id, 1, 4);                               /* qspi write read */
         if (res != 0)                                                                      /* check result */
         {
-            handle->debug_print("w25qxx: release power down failed.\n");                   /* release power down failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: release power down failed.\n");                   /* release power down failed */
+
             return 1;                                                                      /* return error */
         }
     }
-    
+
     return 0;                                                                              /* success return 0 */
 }
 
@@ -1954,16 +1954,16 @@ uint8_t w25qxx_get_manufacturer_device_id(w25qxx_handle_t *handle, uint8_t *manu
     uint8_t res;
     uint8_t buf[4];
     uint8_t out[2];
-    
+
     if (handle == NULL)                                                                    /* check handle */
     {
         return 2;                                                                          /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                               /* check handle initialization */
     {
         return 3;                                                                          /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                          /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                             /* enable dual quad spi */
@@ -1975,8 +1975,8 @@ uint8_t w25qxx_get_manufacturer_device_id(w25qxx_handle_t *handle, uint8_t *manu
                                           (uint8_t *)out, 2, 1);                           /* qspi write read */
             if (res != 0)                                                                  /* check result */
             {
-                handle->debug_print("w25qxx: get manufacturer device id failed.\n");       /* get manufacturer device id failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get manufacturer device id failed.\n");       /* get manufacturer device id failed */
+
                 return 1;                                                                  /* return error */
             }
             *manufacturer = out[0];                                                        /* set manufacturer */
@@ -1992,8 +1992,8 @@ uint8_t w25qxx_get_manufacturer_device_id(w25qxx_handle_t *handle, uint8_t *manu
                                          (uint8_t *)out, 2);                               /* spi write read */
             if (res != 0)                                                                  /* check result */
             {
-                handle->debug_print("w25qxx: get manufacturer device id failed.\n");       /* get manufacturer device id failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get manufacturer device id failed.\n");       /* get manufacturer device id failed */
+
                 return 1;                                                                  /* return error */
             }
             *manufacturer = out[0];                                                        /* set manufacturer */
@@ -2009,14 +2009,14 @@ uint8_t w25qxx_get_manufacturer_device_id(w25qxx_handle_t *handle, uint8_t *manu
                                       (uint8_t *)out, 2, 4);                               /* qspi write read */
         if (res != 0)                                                                      /* check result */
         {
-            handle->debug_print("w25qxx: get manufacturer device id failed.\n");           /* get manufacturer device id failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: get manufacturer device id failed.\n");           /* get manufacturer device id failed */
+
             return 1;                                                                      /* return error */
         }
         *manufacturer = out[0];                                                            /* set manufacturer */
         *device_id = out[1];                                                               /* set device id */
     }
-    
+
     return 0;                                                                              /* success return 0 */
 }
 
@@ -2039,22 +2039,22 @@ uint8_t w25qxx_get_manufacturer_device_id_dual_io(w25qxx_handle_t *handle, uint8
 {
     uint8_t res;
     uint8_t out[2];
-    
+
     if (handle == NULL)                                                                             /* check handle */
     {
         return 2;                                                                                   /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                        /* check handle initialization */
     {
         return 3;                                                                                   /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                   /* spi interface */
     {
         if (handle->dual_quad_spi_enable == 0)                                                      /* check spi */
         {
-            handle->debug_print("w25qxx: standard spi can't use this function failed.\n");          /* standard spi can't use this function failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: standard spi can't use this function failed.\n");          /* standard spi can't use this function failed */
+
             return 6;                                                                               /* return error */
         }
         if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                     /* 3 address mode */
@@ -2066,8 +2066,8 @@ uint8_t w25qxx_get_manufacturer_device_id_dual_io(w25qxx_handle_t *handle, uint8
                                           (uint8_t *)out, 2, 2);                                    /* spi write read */
             if (res != 0)                                                                           /* check result */
             {
-                handle->debug_print("w25qxx: get manufacturer device id dual io failed.\n");        /* get manufacturer device id dual io failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get manufacturer device id dual io failed.\n");        /* get manufacturer device id dual io failed */
+
                 return 1;                                                                           /* return error */
             }
         }
@@ -2080,15 +2080,15 @@ uint8_t w25qxx_get_manufacturer_device_id_dual_io(w25qxx_handle_t *handle, uint8
                                           (uint8_t *)out, 2, 2);                                    /* spi write read */
             if (res != 0)                                                                           /* check result */
             {
-                handle->debug_print("w25qxx: get manufacturer device id dual io failed.\n");        /* get manufacturer device id dual io failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get manufacturer device id dual io failed.\n");        /* get manufacturer device id dual io failed */
+
                 return 1;                                                                           /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                              /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                              /* address mode is invalid */
+
             return 4;                                                                               /* return error */
         }
         *manufacturer = out[0];                                                                     /* set manufacturer */
@@ -2096,11 +2096,11 @@ uint8_t w25qxx_get_manufacturer_device_id_dual_io(w25qxx_handle_t *handle, uint8
     }
     else
     {
-        handle->debug_print("w25qxx: qspi can't use this function.\n");                             /* qspi can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: qspi can't use this function.\n");                             /* qspi can't use this function */
+
         return 5;                                                                                   /* return error */
     }
-    
+
     return 0;                                                                                       /* success return 0 */
 }
 
@@ -2123,22 +2123,22 @@ uint8_t w25qxx_get_manufacturer_device_id_quad_io(w25qxx_handle_t *handle, uint8
 {
     uint8_t res;
     uint8_t out[2];
-    
+
     if (handle == NULL)                                                                             /* check handle */
     {
         return 2;                                                                                   /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                        /* check handle initialization */
     {
         return 3;                                                                                   /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                   /* spi interface */
     {
         if (handle->dual_quad_spi_enable == 0)                                                      /* check spi */
         {
-            handle->debug_print("w25qxx: standard spi can't use this function failed.\n");          /* standard spi can't use this function failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: standard spi can't use this function failed.\n");          /* standard spi can't use this function failed */
+
             return 6;                                                                               /* return error */
         }
         if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                     /* 3 address mode */
@@ -2150,8 +2150,8 @@ uint8_t w25qxx_get_manufacturer_device_id_quad_io(w25qxx_handle_t *handle, uint8
                                           (uint8_t *)out, 2, 4);                                    /* spi write read */
             if (res != 0)                                                                           /* check result */
             {
-                handle->debug_print("w25qxx: get manufacturer device id quad io failed.\n");        /* get manufacturer device id quad io failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get manufacturer device id quad io failed.\n");        /* get manufacturer device id quad io failed */
+
                 return 1;                                                                           /* return error */
             }
         }
@@ -2164,15 +2164,15 @@ uint8_t w25qxx_get_manufacturer_device_id_quad_io(w25qxx_handle_t *handle, uint8
                                           (uint8_t *)out, 2, 4);                                    /* spi write read */
             if (res != 0)                                                                           /* check result */
             {
-                handle->debug_print("w25qxx: get manufacturer device id quad io failed.\n");        /* get manufacturer device id quad io failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get manufacturer device id quad io failed.\n");        /* get manufacturer device id quad io failed */
+
                 return 1;                                                                           /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                              /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                              /* address mode is invalid */
+
             return 4;                                                                               /* return error */
         }
         *manufacturer = out[0];                                                                     /* set manufacturer */
@@ -2180,11 +2180,11 @@ uint8_t w25qxx_get_manufacturer_device_id_quad_io(w25qxx_handle_t *handle, uint8
     }
     else
     {
-        handle->debug_print("w25qxx: qspi can't use this function.\n");                             /* qspi can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: qspi can't use this function.\n");                             /* qspi can't use this function */
+
         return 5;                                                                                   /* return error */
     }
-    
+
     return 0;                                                                                       /* success return 0 */
 }
 
@@ -2205,16 +2205,16 @@ uint8_t w25qxx_get_jedec_id(w25qxx_handle_t *handle, uint8_t *manufacturer, uint
     uint8_t res;
     uint8_t buf[1];
     uint8_t out[3];
-    
+
     if (handle == NULL)                                                                    /* check handle */
     {
         return 2;                                                                          /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                               /* check handle initialization */
     {
         return 3;                                                                          /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                          /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                             /* enable dual quad spi */
@@ -2226,8 +2226,8 @@ uint8_t w25qxx_get_jedec_id(w25qxx_handle_t *handle, uint8_t *manufacturer, uint
                                           (uint8_t *)out, 3, 1);                           /* qspi write read */
             if (res != 0)                                                                  /* check result */
             {
-                handle->debug_print("w25qxx: get jedec id failed.\n");                     /* get jedec id failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get jedec id failed.\n");                     /* get jedec id failed */
+
                 return 1;                                                                  /* return error */
             }
             *manufacturer = out[0];                                                        /* set manufacturer */
@@ -2241,8 +2241,8 @@ uint8_t w25qxx_get_jedec_id(w25qxx_handle_t *handle, uint8_t *manufacturer, uint
                                          (uint8_t *)out, 3);                               /* spi write read */
             if (res != 0)                                                                  /* check result */
             {
-                handle->debug_print("w25qxx: get jedec id failed.\n");                     /* get jedec id  failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get jedec id failed.\n");                     /* get jedec id  failed */
+
                 return 1;                                                                  /* return error */
             }
             *manufacturer = out[0];                                                        /* set manufacturer */
@@ -2259,15 +2259,15 @@ uint8_t w25qxx_get_jedec_id(w25qxx_handle_t *handle, uint8_t *manufacturer, uint
                                       (uint8_t *)out, 3, 4);                               /* qspi write read */
         if (res != 0)                                                                      /* check result */
         {
-            handle->debug_print("w25qxx: get jedec id failed.\n");                         /* get jedec id failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: get jedec id failed.\n");                         /* get jedec id failed */
+
             return 1;                                                                      /* return error */
         }
         *manufacturer = out[0];                                                            /* set manufacturer */
         device_id[0] = out[1];                                                             /* set device id 0 */
         device_id[1] = out[2];                                                             /* set device id 1 */
     }
-    
+
     return 0;                                                                              /* success return 0 */
 }
 
@@ -2285,16 +2285,16 @@ uint8_t w25qxx_global_block_lock(w25qxx_handle_t *handle)
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                                          /* check handle */
     {
         return 2;                                                                                /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                     /* check handle initialization */
     {
         return 3;                                                                                /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                   /* enable dual quad spi */
@@ -2306,8 +2306,8 @@ uint8_t w25qxx_global_block_lock(w25qxx_handle_t *handle)
                                            NULL, 0x00, 0x00);                                    /* qspi write read */
             if (res != 0)                                                                        /* check result */
             {
-                handle->debug_print("w25qxx: global block lock failed.\n");                      /* global block lock failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: global block lock failed.\n");                      /* global block lock failed */
+
                 return 1;                                                                        /* return error */
             }
         }
@@ -2317,8 +2317,8 @@ uint8_t w25qxx_global_block_lock(w25qxx_handle_t *handle)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                   /* spi write read */
             if (res != 0)                                                                        /* check result */
             {
-                handle->debug_print("w25qxx: global block lock failed.\n");                      /* global block lock failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: global block lock failed.\n");                      /* global block lock failed */
+
                 return 1;                                                                        /* return error */
             }
         }
@@ -2332,12 +2332,12 @@ uint8_t w25qxx_global_block_lock(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0x00);                                        /* qspi write read */
         if (res != 0)                                                                            /* check result */
         {
-            handle->debug_print("w25qxx: global block lock failed.\n");                          /* global block lock failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: global block lock failed.\n");                          /* global block lock failed */
+
             return 1;                                                                            /* return error */
         }
     }
-    
+
     return 0;                                                                                    /* success return 0 */
 }
 
@@ -2355,16 +2355,16 @@ uint8_t w25qxx_global_block_unlock(w25qxx_handle_t *handle)
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                                          /* check handle */
     {
         return 2;                                                                                /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                     /* check handle initialization */
     {
         return 3;                                                                                /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                   /* enable dual quad spi */
@@ -2376,8 +2376,8 @@ uint8_t w25qxx_global_block_unlock(w25qxx_handle_t *handle)
                                            NULL, 0x00, 0x00);                                    /* qspi write read */
             if (res != 0)                                                                        /* check result */
             {
-                handle->debug_print("w25qxx: global block unlock failed.\n");                    /* global block unlock failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: global block unlock failed.\n");                    /* global block unlock failed */
+
                 return 1;                                                                        /* return error */
             }
         }
@@ -2387,8 +2387,8 @@ uint8_t w25qxx_global_block_unlock(w25qxx_handle_t *handle)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                   /* spi qspi write read */
             if (res != 0)                                                                        /* check result */
             {
-                handle->debug_print("w25qxx: global block unlock failed.\n");                    /* global block unlock failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: global block unlock failed.\n");                    /* global block unlock failed */
+
                 return 1;                                                                        /* return error */
             }
         }
@@ -2402,12 +2402,12 @@ uint8_t w25qxx_global_block_unlock(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0x00);                                        /* qspi write read */
         if (res != 0)                                                                            /* check result */
         {
-            handle->debug_print("w25qxx: global block unlock failed.\n");                        /* global block unlock failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: global block unlock failed.\n");                        /* global block unlock failed */
+
             return 1;                                                                            /* return error */
         }
     }
-    
+
     return 0;                                                                                    /* success return 0 */
 }
 
@@ -2428,20 +2428,20 @@ uint8_t w25qxx_set_read_parameters(w25qxx_handle_t *handle, w25qxx_qspi_read_dum
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                                 /* check handle */
     {
         return 2;                                                                       /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                            /* check handle initialization */
     {
         return 3;                                                                       /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                       /* spi interface */
     {
-        handle->debug_print("w25qxx: spi interface can't use this function.\n");        /* spi interface can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: spi interface can't use this function.\n");        /* spi interface can't use this function */
+
         return 4;                                                                       /* return error */
     }
     else
@@ -2455,8 +2455,8 @@ uint8_t w25qxx_set_read_parameters(w25qxx_handle_t *handle, w25qxx_qspi_read_dum
                                        NULL, 0x00, 4);                                  /* qspi write read */
         if (res != 0)                                                                   /* check result */
         {
-            handle->debug_print("w25qxx: set read parameters failed.\n");               /* set read parameters failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: set read parameters failed.\n");               /* set read parameters failed */
+
             return 5;                                                                   /* return error */
         }
         if (((buf[0] >> 4) & 0x03) == 0x00)                                             /* if 0x00 */
@@ -2476,7 +2476,7 @@ uint8_t w25qxx_set_read_parameters(w25qxx_handle_t *handle, w25qxx_qspi_read_dum
             handle->dummy = 8;                                                          /* dummy 8 */
         }
     }
-    
+
     return 0;                                                                           /* success return 0 */
 }
 
@@ -2495,20 +2495,20 @@ uint8_t w25qxx_enter_qspi_mode(w25qxx_handle_t *handle)
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                                 /* check handle */
     {
         return 2;                                                                       /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                            /* check handle initialization */
     {
         return 3;                                                                       /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_QSPI)                                      /* qspi interface */
     {
-        handle->debug_print("w25qxx: qspi interface can't use this function.\n");       /* qspi interface can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: qspi interface can't use this function.\n");       /* qspi interface can't use this function */
+
         return 4;                                                                       /* return error */
     }
     else
@@ -2520,11 +2520,11 @@ uint8_t w25qxx_enter_qspi_mode(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0x00);                               /* qspi write read */
         if (res != 0)                                                                   /* check result */
         {
-            handle->debug_print("w25qxx: enter qspi mode failed.\n");                   /* enter qspi mode failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: enter qspi mode failed.\n");                   /* enter qspi mode failed */
+
             return 1;                                                                   /* return error */
         }
-        handle->delay_ms(10);                                                           /* delay 10 ms */
+        handle->delay_ms(handle->extra, 10);                                                           /* delay 10 ms */
         buf[0] = handle->param;                                                         /* set param */
         res = a_w25qxx_qspi_write_read(handle, 0xC0, 4,
                                        0x00000000, 0x00, 0x00,
@@ -2533,8 +2533,8 @@ uint8_t w25qxx_enter_qspi_mode(w25qxx_handle_t *handle)
                                        NULL, 0x00, 4);                                  /* qspi write read */
         if (res != 0)                                                                   /* check result */
         {
-            handle->debug_print("w25qxx: set read parameters failed.\n");               /* set read parameters failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: set read parameters failed.\n");               /* set read parameters failed */
+
             return 5;                                                                   /* return error */
         }
         if (((buf[0] >> 4) & 0x03) == 0x00)                                             /* if 0x00 */
@@ -2554,7 +2554,7 @@ uint8_t w25qxx_enter_qspi_mode(w25qxx_handle_t *handle)
             handle->dummy = 8;                                                          /* dummy 8 */
         }
     }
-    
+
     return 0;                                                                           /* success return 0 */
 }
 
@@ -2572,20 +2572,20 @@ uint8_t w25qxx_enter_qspi_mode(w25qxx_handle_t *handle)
 uint8_t w25qxx_exit_qspi_mode(w25qxx_handle_t *handle)
 {
     uint8_t res;
-    
+
     if (handle == NULL)                                                                 /* check handle */
     {
         return 2;                                                                       /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                            /* check handle initialization */
     {
         return 3;                                                                       /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                       /* spi interface */
     {
-        handle->debug_print("w25qxx: spi interface can't use this function.\n");        /* spi interface can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: spi interface can't use this function.\n");        /* spi interface can't use this function */
+
         return 4;                                                                       /* return error */
     }
     else
@@ -2597,12 +2597,12 @@ uint8_t w25qxx_exit_qspi_mode(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0x00);                               /* qspi write read */
         if (res != 0)                                                                   /* check result */
         {
-            handle->debug_print("w25qxx: exit qspi mode failed.\n");                    /* exit qspi mode failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: exit qspi mode failed.\n");                    /* exit qspi mode failed */
+
             return 1;                                                                   /* return error */
         }
     }
-    
+
     return 0;                                                                           /* success return 0 */
 }
 
@@ -2620,16 +2620,16 @@ uint8_t w25qxx_enable_reset(w25qxx_handle_t *handle)
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                              /* check handle */
     {
         return 2;                                                                    /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                         /* check handle initialization */
     {
         return 3;                                                                    /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                    /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                       /* enable dual quad spi */
@@ -2641,8 +2641,8 @@ uint8_t w25qxx_enable_reset(w25qxx_handle_t *handle)
                                            NULL, 0x00, 0x00);                        /* qspi write read */
             if (res != 0)                                                            /* check result */
             {
-                handle->debug_print("w25qxx: enable reset failed.\n");               /* enable reset failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: enable reset failed.\n");               /* enable reset failed */
+
                 return 1;                                                            /* return error */
             }
         }
@@ -2653,8 +2653,8 @@ uint8_t w25qxx_enable_reset(w25qxx_handle_t *handle)
                                           1, NULL, 0);                               /* spi write read */
             if (res != 0)                                                            /* check result */
             {
-                handle->debug_print("w25qxx: enable reset failed.\n");               /* enable reset failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: enable reset failed.\n");               /* enable reset failed */
+
                 return 1;                                                            /* return error */
             }
         }
@@ -2668,12 +2668,12 @@ uint8_t w25qxx_enable_reset(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0x00);                            /* qspi write read */
         if (res != 0)                                                                /* check result */
         {
-            handle->debug_print("w25qxx: enable reset failed.\n");                   /* enable reset failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: enable reset failed.\n");                   /* enable reset failed */
+
             return 1;                                                                /* return error */
         }
     }
-    
+
     return 0;                                                                        /* success return 0 */
 }
 
@@ -2691,16 +2691,16 @@ uint8_t w25qxx_reset_device(w25qxx_handle_t *handle)
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                              /* check handle */
     {
         return 2;                                                                    /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                         /* check handle initialization */
     {
         return 3;                                                                    /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                    /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                       /* enable dual quad spi */
@@ -2712,8 +2712,8 @@ uint8_t w25qxx_reset_device(w25qxx_handle_t *handle)
                                            NULL, 0x00, 0x00);                        /* qspi write read */
             if (res != 0)                                                            /* check result */
             {
-                handle->debug_print("w25qxx: reset device failed.\n");               /* reset device failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: reset device failed.\n");               /* reset device failed */
+
                 return 1;                                                            /* return error */
             }
         }
@@ -2724,8 +2724,8 @@ uint8_t w25qxx_reset_device(w25qxx_handle_t *handle)
                                           1, NULL, 0);                               /* spi write read */
             if (res != 0)                                                            /* check result */
             {
-                handle->debug_print("w25qxx: reset device failed.\n");               /* reset device failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: reset device failed.\n");               /* reset device failed */
+
                 return 1;                                                            /* return error */
             }
         }
@@ -2739,12 +2739,12 @@ uint8_t w25qxx_reset_device(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0x00);                            /* qspi write read */
         if (res != 0)                                                                /* check result */
         {
-            handle->debug_print("w25qxx: reset device failed.\n");                   /* reset device failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: reset device failed.\n");                   /* reset device failed */
+
             return 1;                                                                /* return error */
         }
     }
-    
+
     return 0;                                                                        /* success return 0 */
 }
 
@@ -2765,16 +2765,16 @@ uint8_t w25qxx_get_unique_id(w25qxx_handle_t *handle, uint8_t id[8])
 {
     uint8_t res;
     uint8_t buf[6];
-    
+
     if (handle == NULL)                                                                                           /* check handle */
     {
         return 2;                                                                                                 /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                                      /* check handle initialization */
     {
         return 3;                                                                                                 /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                                 /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                                    /* enable dual quad spi */
@@ -2788,8 +2788,8 @@ uint8_t w25qxx_get_unique_id(w25qxx_handle_t *handle, uint8_t id[8])
                                               (uint8_t *)id, 8, 1);                                               /* qspi write read */
                 if (res != 0)                                                                                     /* check result */
                 {
-                    handle->debug_print("w25qxx: read unique id failed.\n");                                      /* read unique id failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: read unique id failed.\n");                                      /* read unique id failed */
+
                     return 1;                                                                                     /* return error */
                 }
             }
@@ -2802,15 +2802,15 @@ uint8_t w25qxx_get_unique_id(w25qxx_handle_t *handle, uint8_t id[8])
                                               (uint8_t *)id, 8, 1);                                               /* qspi write read */
                 if (res != 0)                                                                                     /* check result */
                 {
-                    handle->debug_print("w25qxx: read unique id failed.\n");                                      /* read unique id failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: read unique id failed.\n");                                      /* read unique id failed */
+
                     return 1;                                                                                     /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                        /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                        /* address mode is invalid */
+
                 return 4;                                                                                         /* return error */
             }
         }
@@ -2826,8 +2826,8 @@ uint8_t w25qxx_get_unique_id(w25qxx_handle_t *handle, uint8_t id[8])
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 5, (uint8_t *)id, 8);                       /* spi write read */
                 if (res != 0)                                                                                     /* check result */
                 {
-                    handle->debug_print("w25qxx: read unique id failed.\n");                                      /* read unique id failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: read unique id failed.\n");                                      /* read unique id failed */
+
                     return 1;                                                                                     /* return error */
                 }
             }
@@ -2842,26 +2842,26 @@ uint8_t w25qxx_get_unique_id(w25qxx_handle_t *handle, uint8_t id[8])
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 6, (uint8_t *)id, 8);                       /* spi write read */
                 if (res != 0)                                                                                     /* check result */
                 {
-                    handle->debug_print("w25qxx: read unique id failed.\n");                                      /* read unique id failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: read unique id failed.\n");                                      /* read unique id failed */
+
                     return 1;                                                                                     /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                        /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                        /* address mode is invalid */
+
                 return 4;                                                                                         /* return error */
             }
         }
     }
     else                                                                                                          /* qspi interface */
     {
-        handle->debug_print("w25qxx: qspi can't use this function.\n");                                           /* qspi can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: qspi can't use this function.\n");                                           /* qspi can't use this function */
+
         return 5;                                                                                                 /* return error */
     }
-    
+
     return 0;                                                                                                     /* success return 0 */
 }
 
@@ -2881,16 +2881,16 @@ uint8_t w25qxx_get_sfdp(w25qxx_handle_t *handle, uint8_t sfdp[256])
 {
     uint8_t res;
     uint8_t buf[5];
-    
+
     if (handle == NULL)                                                                       /* check handle */
     {
         return 2;                                                                             /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                  /* check handle initialization */
     {
         return 3;                                                                             /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                             /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                /* enable dual quad spi */
@@ -2903,8 +2903,8 @@ uint8_t w25qxx_get_sfdp(w25qxx_handle_t *handle, uint8_t sfdp[256])
                                           (uint8_t *)sfdp, 256, 1);                           /* qspi write read */
             if (res != 0)                                                                     /* check result */
             {
-                handle->debug_print("w25qxx: read unique id failed.\n");                      /* read unique id failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: read unique id failed.\n");                      /* read unique id failed */
+
                 return 1;                                                                     /* return error */
             }
         }
@@ -2919,19 +2919,19 @@ uint8_t w25qxx_get_sfdp(w25qxx_handle_t *handle, uint8_t sfdp[256])
                                          (uint8_t *)sfdp, 256);                               /* spi write read */
             if (res != 0)                                                                     /* check result */
             {
-                handle->debug_print("w25qxx: get sfdp failed.\n");                            /* get sfdp failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get sfdp failed.\n");                            /* get sfdp failed */
+
                 return 1;                                                                     /* return error */
             }
         }
     }
     else                                                                                      /* qspi interface */
     {
-        handle->debug_print("w25qxx: qspi can't use this function.\n");                       /* qspi can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: qspi can't use this function.\n");                       /* qspi can't use this function */
+
         return 4;                                                                             /* return error */
     }
-    
+
     return 0;                                                                                 /* success return 0 */
 }
 
@@ -2955,16 +2955,16 @@ uint8_t w25qxx_erase_security_register(w25qxx_handle_t *handle, w25qxx_security_
     uint8_t status;
     uint32_t timeout;
     uint8_t buf[5];
-    
+
     if (handle == NULL)                                                                                       /* check handle */
     {
         return 2;                                                                                             /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                                  /* check handle initialization */
     {
         return 3;                                                                                             /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                             /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                                /* enable dual quad spi */
@@ -2977,8 +2977,8 @@ uint8_t w25qxx_erase_security_register(w25qxx_handle_t *handle, w25qxx_security_
                                            NULL, 0x00, 0x00);                                                 /* qspi write read */
             if (res != 0)                                                                                     /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                        /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                        /* write enable failed */
+
                 return 1;                                                                                     /* return error */
             }
             if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                           /* 3 address mode */
@@ -2991,8 +2991,8 @@ uint8_t w25qxx_erase_security_register(w25qxx_handle_t *handle, w25qxx_security_
                                                NULL, 0x00, 0x00);                                             /* qspi write read */
                 if (res != 0)                                                                                 /* check result */
                 {
-                    handle->debug_print("w25qxx: erase security register failed.\n");                         /* erase security register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: erase security register failed.\n");                         /* erase security register failed */
+
                     return 1;                                                                                 /* return error */
                 }
             }
@@ -3006,18 +3006,18 @@ uint8_t w25qxx_erase_security_register(w25qxx_handle_t *handle, w25qxx_security_
                                                NULL, 0x00, 0x00);                                             /* qspi write read */
                 if (res != 0)                                                                                 /* check result */
                 {
-                    handle->debug_print("w25qxx: erase security register failed.\n");                         /* erase security register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: erase security register failed.\n");                         /* erase security register failed */
+
                     return 1;                                                                                 /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
+
                 return 4;                                                                                     /* return error */
             }
-            
+
             timeout = 100 * 100;                                                                              /* max 1000 ms */
             while (timeout != 0)                                                                              /* check timeout */
             {
@@ -3029,8 +3029,8 @@ uint8_t w25qxx_erase_security_register(w25qxx_handle_t *handle, w25qxx_security_
                                               (uint8_t *)&status, 1, 1);                                      /* qspi write read */
                 if (res != 0)                                                                                 /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                     /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                     /* get status1 failed */
+
                     return 1;                                                                                 /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                                  /* check status */
@@ -3038,12 +3038,12 @@ uint8_t w25qxx_erase_security_register(w25qxx_handle_t *handle, w25qxx_security_
                     break;                                                                                    /* break */
                 }
                 timeout--;                                                                                    /* timeout-- */
-                handle->delay_us(10);                                                                         /* delay 10 us */
+                handle->delay_us(handle->extra, handle->extra, 10);                                                                         /* delay 10 us */
             }
             if (timeout == 0)
             {
-                handle->debug_print("w25qxx: erase security register timeout.\n");                            /* erase security register timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: erase security register timeout.\n");                            /* erase security register timeout */
+
                 return 6;                                                                                     /* return error */
             }
         }
@@ -3053,8 +3053,8 @@ uint8_t w25qxx_erase_security_register(w25qxx_handle_t *handle, w25qxx_security_
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                                /* spi write read */
             if (res != 0)                                                                                     /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                        /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                        /* write enable failed */
+
                 return 1;                                                                                     /* return error */
             }
             if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                           /* 3 address mode */
@@ -3066,8 +3066,8 @@ uint8_t w25qxx_erase_security_register(w25qxx_handle_t *handle, w25qxx_security_
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 4, NULL, 0);                            /* spi write read */
                 if (res != 0)                                                                                 /* check result */
                 {
-                    handle->debug_print("w25qxx: erase security register failed.\n");                         /* erase security register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: erase security register failed.\n");                         /* erase security register failed */
+
                     return 1;                                                                                 /* return error */
                 }
             }
@@ -3081,18 +3081,18 @@ uint8_t w25qxx_erase_security_register(w25qxx_handle_t *handle, w25qxx_security_
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 5, NULL, 0);                            /* spi write read */
                 if (res != 0)                                                                                 /* check result */
                 {
-                    handle->debug_print("w25qxx: erase security register failed.\n");                         /* erase security register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: erase security register failed.\n");                         /* erase security register failed */
+
                     return 1;                                                                                 /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
+
                 return 4;                                                                                     /* return error */
             }
-            
+
             timeout = 100 * 100;                                                                              /* max 1000 ms */
             while (timeout != 0)                                                                              /* check timeout */
             {
@@ -3100,8 +3100,8 @@ uint8_t w25qxx_erase_security_register(w25qxx_handle_t *handle, w25qxx_security_
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, (uint8_t *)&status, 1);              /* spi write read */
                 if (res != 0)                                                                                 /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                     /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                     /* get status1 failed */
+
                     return 1;                                                                                 /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                                  /* check status */
@@ -3109,23 +3109,23 @@ uint8_t w25qxx_erase_security_register(w25qxx_handle_t *handle, w25qxx_security_
                     break;                                                                                    /* break */
                 }
                 timeout--;                                                                                    /* timeout-- */
-                handle->delay_us(10);                                                                         /* delay 10 us */
+                handle->delay_us(handle->extra, handle->extra, 10);                                                                         /* delay 10 us */
             }
             if (timeout == 0)
             {
-                handle->debug_print("w25qxx: erase security register timeout.\n");                            /* erase security register timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: erase security register timeout.\n");                            /* erase security register timeout */
+
                 return 6;                                                                                     /* return error */
             }
         }
     }
     else                                                                                                      /* qspi interface */
     {
-        handle->debug_print("w25qxx: qspi can't use this function.\n");                                       /* qspi can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: qspi can't use this function.\n");                                       /* qspi can't use this function */
+
         return 5;                                                                                             /* return error */
     }
-    
+
     return 0;                                                                                                 /* success return 0 */
 }
 
@@ -3150,16 +3150,16 @@ uint8_t w25qxx_program_security_register(w25qxx_handle_t *handle, w25qxx_securit
     uint8_t status;
     uint32_t timeout;
     uint8_t buf[5];
-    
+
     if (handle == NULL)                                                                                       /* check handle */
     {
         return 2;                                                                                             /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                                  /* check handle initialization */
     {
         return 3;                                                                                             /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                             /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                                /* enable dual quad spi */
@@ -3172,8 +3172,8 @@ uint8_t w25qxx_program_security_register(w25qxx_handle_t *handle, w25qxx_securit
                                            NULL, 0x00, 0x00);                                                 /* qspi write read */
             if (res != 0)                                                                                     /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                        /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                        /* write enable failed */
+
                 return 1;                                                                                     /* return error */
             }
             if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                           /* 3 address mode */
@@ -3186,8 +3186,8 @@ uint8_t w25qxx_program_security_register(w25qxx_handle_t *handle, w25qxx_securit
                                                NULL, 0x00, 1);                                                /* qspi write read */
                 if (res != 0)                                                                                 /* check result */
                 {
-                    handle->debug_print("w25qxx: program security register failed.\n");                       /* program security register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: program security register failed.\n");                       /* program security register failed */
+
                     return 1;                                                                                 /* return error */
                 }
             }
@@ -3201,18 +3201,18 @@ uint8_t w25qxx_program_security_register(w25qxx_handle_t *handle, w25qxx_securit
                                                NULL, 0x00, 1);                                                /* qspi write read */
                 if (res != 0)                                                                                 /* check result */
                 {
-                    handle->debug_print("w25qxx: program security register failed.\n");                       /* program security register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: program security register failed.\n");                       /* program security register failed */
+
                     return 1;                                                                                 /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
+
                 return 4;                                                                                     /* return error */
             }
-            
+
             timeout = 3 * 100;                                                                                /* max 3 ms */
             while (timeout != 0)                                                                              /* check timeout */
             {
@@ -3224,8 +3224,8 @@ uint8_t w25qxx_program_security_register(w25qxx_handle_t *handle, w25qxx_securit
                                               (uint8_t *)&status, 1, 1);                                      /* qspi write read */
                 if (res != 0)                                                                                 /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                     /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                     /* get status1 failed */
+
                     return 1;                                                                                 /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                                  /* check status */
@@ -3233,12 +3233,12 @@ uint8_t w25qxx_program_security_register(w25qxx_handle_t *handle, w25qxx_securit
                     break;                                                                                    /* break */
                 }
                 timeout--;                                                                                    /* timeout-- */
-                handle->delay_us(10);                                                                         /* delay 10 us */
+                handle->delay_us(handle->extra, 10);                                                                         /* delay 10 us */
             }
             if (timeout == 0)
             {
-                handle->debug_print("w25qxx: program security register timeout.\n");                          /* program security register timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: program security register timeout.\n");                          /* program security register timeout */
+
                 return 6;                                                                                     /* return error */
             }
         }
@@ -3248,8 +3248,8 @@ uint8_t w25qxx_program_security_register(w25qxx_handle_t *handle, w25qxx_securit
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                                /* spi write read */
             if (res != 0)                                                                                     /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                        /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                        /* write enable failed */
+
                 return 1;                                                                                     /* return error */
             }
             if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                           /* 3 address mode */
@@ -3262,8 +3262,8 @@ uint8_t w25qxx_program_security_register(w25qxx_handle_t *handle, w25qxx_securit
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)handle->buf, 260, NULL, 0);                  /* spi write read */
                 if (res != 0)                                                                                 /* check result */
                 {
-                    handle->debug_print("w25qxx: program security register failed.\n");                       /* program security register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: program security register failed.\n");                       /* program security register failed */
+
                     return 1;                                                                                 /* return error */
                 }
             }
@@ -3278,18 +3278,18 @@ uint8_t w25qxx_program_security_register(w25qxx_handle_t *handle, w25qxx_securit
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)handle->buf, 261, NULL, 0);                  /* spi write read */
                 if (res != 0)                                                                                 /* check result */
                 {
-                    handle->debug_print("w25qxx: program security register failed.\n");                       /* program security register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: program security register failed.\n");                       /* program security register failed */
+
                     return 1;                                                                                 /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
+
                 return 4;                                                                                     /* return error */
             }
-            
+
             timeout = 3 * 100;                                                                                /* max 3 ms */
             while (timeout != 0)                                                                              /* check timeout */
             {
@@ -3297,8 +3297,8 @@ uint8_t w25qxx_program_security_register(w25qxx_handle_t *handle, w25qxx_securit
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, (uint8_t *)&status, 1);              /* spi write read */
                 if (res != 0)                                                                                 /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                     /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                     /* get status1 failed */
+
                     return 1;                                                                                 /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                                  /* check status */
@@ -3306,23 +3306,23 @@ uint8_t w25qxx_program_security_register(w25qxx_handle_t *handle, w25qxx_securit
                     break;                                                                                    /* break */
                 }
                 timeout--;                                                                                    /* timeout-- */
-                handle->delay_us(10);                                                                         /* delay 10 us */
+                handle->delay_us(handle->extra, 10);                                                                         /* delay 10 us */
             }
             if (timeout == 0)
             {
-                handle->debug_print("w25qxx: program security register timeout.\n");                          /* program security register timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: program security register timeout.\n");                          /* program security register timeout */
+
                 return 6;                                                                                     /* return error */
             }
         }
     }
     else                                                                                                      /* qspi interface */
     {
-        handle->debug_print("w25qxx: qspi can't use this function.\n");                                       /* qspi can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: qspi can't use this function.\n");                                       /* qspi can't use this function */
+
         return 5;                                                                                             /* return error */
     }
-    
+
     return 0;                                                                                                 /* success return 0 */
 }
 
@@ -3345,16 +3345,16 @@ uint8_t w25qxx_read_security_register(w25qxx_handle_t *handle, w25qxx_security_r
 {
     uint8_t res;
     uint8_t buf[6];
-    
+
     if (handle == NULL)                                                                                       /* check handle */
     {
         return 2;                                                                                             /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                                  /* check handle initialization */
     {
         return 3;                                                                                             /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                             /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                                /* enable dual quad spi */
@@ -3369,8 +3369,8 @@ uint8_t w25qxx_read_security_register(w25qxx_handle_t *handle, w25qxx_security_r
                                                data, 256, 1);                                                 /* qspi write read */
                 if (res != 0)                                                                                 /* check result */
                 {
-                    handle->debug_print("w25qxx: read security register failed.\n");                          /* read security register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: read security register failed.\n");                          /* read security register failed */
+
                     return 1;                                                                                 /* return error */
                 }
             }
@@ -3384,15 +3384,15 @@ uint8_t w25qxx_read_security_register(w25qxx_handle_t *handle, w25qxx_security_r
                                                data, 256, 1);                                                 /* qspi write read */
                 if (res != 0)                                                                                 /* check result */
                 {
-                    handle->debug_print("w25qxx: read security register failed.\n");                          /* read security register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: read security register failed.\n");                          /* read security register failed */
+
                     return 1;                                                                                 /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
+
                 return 4;                                                                                     /* return error */
             }
         }
@@ -3408,8 +3408,8 @@ uint8_t w25qxx_read_security_register(w25qxx_handle_t *handle, w25qxx_security_r
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 5, data, 256);                          /* spi write read */
                 if (res != 0)                                                                                 /* check result */
                 {
-                    handle->debug_print("w25qxx: read security register failed.\n");                          /* read security register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: read security register failed.\n");                          /* read security register failed */
+
                     return 1;                                                                                 /* return error */
                 }
             }
@@ -3424,26 +3424,26 @@ uint8_t w25qxx_read_security_register(w25qxx_handle_t *handle, w25qxx_security_r
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 6, data, 256);                          /* spi write read */
                 if (res != 0)                                                                                 /* check result */
                 {
-                    handle->debug_print("w25qxx: read security register failed.\n");                          /* read security register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: read security register failed.\n");                          /* read security register failed */
+
                     return 1;                                                                                 /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
+
                 return 4;                                                                                     /* return error */
             }
         }
     }
     else                                                                                                      /* qspi interface */
     {
-        handle->debug_print("w25qxx: qspi can't use this function.\n");                                       /* qspi can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: qspi can't use this function.\n");                                       /* qspi can't use this function */
+
         return 5;                                                                                             /* return error */
     }
-    
+
     return 0;                                                                                                 /* success return 0 */
 }
 
@@ -3466,16 +3466,16 @@ uint8_t w25qxx_only_spi_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
 {
     uint8_t res;
     uint8_t buf[5];
-    
+
     if (handle == NULL)                                                                                   /* check handle */
     {
         return 2;                                                                                         /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                              /* check handle initialization */
     {
         return 3;                                                                                         /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                         /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                            /* enable dual quad spi */
@@ -3492,8 +3492,8 @@ uint8_t w25qxx_only_spi_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                                                    NULL, 0x00, 0x00);                                     /* qspi write read */
                     if (res != 0)                                                                         /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                            /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                            /* write enable failed */
+
                         return 1;                                                                         /* return error */
                     }
                     buf[0] = (addr >> 24) & 0xFF;                                                         /* 31 - 24 bits */
@@ -3505,11 +3505,11 @@ uint8_t w25qxx_only_spi_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                                                    NULL, 0x00, 1);                                        /* qspi write read */
                     if (res != 0)                                                                         /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");            /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");            /* write extended addr register failed */
+
                         return 1;                                                                         /* return error */
                     }
-                    
+
                 }
                 res = a_w25qxx_qspi_write_read(handle,
                                                W25QXX_COMMAND_READ_DATA, 1,
@@ -3519,12 +3519,12 @@ uint8_t w25qxx_only_spi_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                                                data, len, 1);                                             /* qspi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: only spi read failed.\n");                               /* only spi read failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: only spi read failed.\n");                               /* only spi read failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
-            else if ((handle->address_mode == W25QXX_ADDRESS_MODE_4_BYTE) && 
+            else if ((handle->address_mode == W25QXX_ADDRESS_MODE_4_BYTE) &&
                      (handle->type >= W25Q256))                                                           /* check address mode */
             {
                 res = a_w25qxx_qspi_write_read(handle,
@@ -3535,15 +3535,15 @@ uint8_t w25qxx_only_spi_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                                                data, len, 1);                                             /* qspi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: only spi read failed.\n");                               /* only spi read failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: only spi read failed.\n");                               /* only spi read failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                /* address mode is invalid */
+
                 return 4;                                                                                 /* return error */
             }
         }
@@ -3557,8 +3557,8 @@ uint8_t w25qxx_only_spi_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                    /* spi write read */
                     if (res != 0)                                                                         /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                            /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                            /* write enable failed */
+
                         return 1;                                                                         /* return error */
                     }
                     buf[0] = 0xC5;                                                                        /* write extended addr register command */
@@ -3566,8 +3566,8 @@ uint8_t w25qxx_only_spi_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 2, NULL, 0);                    /* spi write read */
                     if (res != 0)                                                                         /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");            /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");            /* write extended addr register failed */
+
                         return 1;                                                                         /* return error */
                     }
                 }
@@ -3578,12 +3578,12 @@ uint8_t w25qxx_only_spi_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 4, (uint8_t *)data, (uint32_t)len); /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: only spi read failed.\n");                               /* only spi read failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: only spi read failed.\n");                               /* only spi read failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
-            else if ((handle->address_mode == W25QXX_ADDRESS_MODE_4_BYTE) && 
+            else if ((handle->address_mode == W25QXX_ADDRESS_MODE_4_BYTE) &&
                      (handle->type >= W25Q256))                                                           /* check address mode */
             {
                 buf[0] = W25QXX_COMMAND_READ_DATA;                                                        /* only spi read command */
@@ -3594,26 +3594,26 @@ uint8_t w25qxx_only_spi_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 5, (uint8_t *)data, (uint32_t)len); /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: only spi read failed.\n");                               /* only spi read failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: only spi read failed.\n");                               /* only spi read failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                /* address mode is invalid */
+
                 return 4;                                                                                 /* return error */
             }
         }
     }
     else
     {
-        handle->debug_print("w25qxx: only spi interface can use this function.\n");                       /* only spi interface can use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: only spi interface can use this function.\n");                       /* only spi interface can use this function */
+
         return 5;                                                                                         /* return error */
     }
-    
+
     return 0;                                                                                             /* success return 0 */
 }
 
@@ -3635,16 +3635,16 @@ uint8_t w25qxx_fast_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, 
 {
     uint8_t res;
     uint8_t buf[6];
-    
+
     if (handle == NULL)                                                                                   /* check handle */
     {
         return 2;                                                                                         /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                              /* check handle initialization */
     {
         return 3;                                                                                         /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                         /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                            /* enable dual quad spi */
@@ -3660,8 +3660,8 @@ uint8_t w25qxx_fast_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, 
                                                    NULL, 0x00, 0x00);                                     /* qspi write read */
                     if (res != 0)                                                                         /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                            /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                            /* write enable failed */
+
                         return 1;                                                                         /* return error */
                     }
                     buf[0] = (addr >> 24) & 0xFF;                                                         /* 31 - 24 bits */
@@ -3672,8 +3672,8 @@ uint8_t w25qxx_fast_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, 
                                                    NULL, 0x00, 1);                                        /* spi write read */
                     if (res != 0)                                                                         /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");            /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");            /* write extended addr register failed */
+
                         return 1;                                                                         /* return error */
                     }
                 }
@@ -3684,8 +3684,8 @@ uint8_t w25qxx_fast_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, 
                                                data, len, 1);                                             /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: fast read failed.\n");                                   /* fast read failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                   /* fast read failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
@@ -3698,15 +3698,15 @@ uint8_t w25qxx_fast_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, 
                                                data, len, 1);                                             /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: fast read failed.\n");                                   /* fast read failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                   /* fast read failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                /* address mode is invalid */
+
                 return 4;                                                                                 /* return error */
             }
         }
@@ -3720,8 +3720,8 @@ uint8_t w25qxx_fast_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, 
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                    /* spi write read */
                     if (res != 0)                                                                         /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                            /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                            /* write enable failed */
+
                         return 1;                                                                         /* return error */
                     }
                     buf[0] = 0xC5;                                                                        /* write extended addr register command */
@@ -3729,8 +3729,8 @@ uint8_t w25qxx_fast_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, 
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 2, NULL, 0);                    /* spi write read */
                     if (res != 0)                                                                         /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");            /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");            /* write extended addr register failed */
+
                         return 1;                                                                         /* return error */
                     }
                 }
@@ -3742,8 +3742,8 @@ uint8_t w25qxx_fast_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, 
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 5, (uint8_t *)data, (uint32_t)len); /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: fast read failed.\n");                                   /* fast read failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                   /* fast read failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
@@ -3759,15 +3759,15 @@ uint8_t w25qxx_fast_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, 
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 6, (uint8_t *)data, (uint32_t)len); /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: fast read failed.\n");                                   /* fast read failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                   /* fast read failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                /* address mode is invalid */
+
                 return 4;                                                                                 /* return error */
             }
         }
@@ -3785,8 +3785,8 @@ uint8_t w25qxx_fast_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, 
                                                NULL, 0x00, 0x00);                                         /* qspi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                /* write enable failed */
+
                     return 1;                                                                             /* return error */
                 }
                 buf[0] = (addr >> 24) & 0xFF;                                                             /* 31 - 24 bits */
@@ -3797,8 +3797,8 @@ uint8_t w25qxx_fast_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, 
                                                NULL, 0x00, 4);                                            /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
@@ -3809,8 +3809,8 @@ uint8_t w25qxx_fast_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, 
                                            data, len, 4);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: fast read failed.\n");                                       /* fast read failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                       /* fast read failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
@@ -3823,19 +3823,19 @@ uint8_t w25qxx_fast_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, 
                                            data, len, 4);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: fast read failed.\n");                                       /* fast read failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                       /* fast read failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
+
             return 4;                                                                                     /* return error */
         }
     }
-    
+
     return 0;                                                                                             /* success return 0 */
 }
 
@@ -3859,22 +3859,22 @@ uint8_t w25qxx_fast_read_dual_output(w25qxx_handle_t *handle, uint32_t addr, uin
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                                                   /* check handle */
     {
         return 2;                                                                                         /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                              /* check handle initialization */
     {
         return 3;                                                                                         /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                         /* spi interface */
     {
         if (handle->dual_quad_spi_enable == 0)                                                            /* check spi */
         {
-            handle->debug_print("w25qxx: standard spi can't use this function failed.\n");                /* standard spi can't use this function failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: standard spi can't use this function failed.\n");                /* standard spi can't use this function failed */
+
             return 6;                                                                                     /* return error */
         }
         if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                           /* 3 address mode */
@@ -3888,8 +3888,8 @@ uint8_t w25qxx_fast_read_dual_output(w25qxx_handle_t *handle, uint32_t addr, uin
                                                NULL, 0x00, 0x00);                                         /* qspi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                /* write enable failed */
+
                     return 1;                                                                             /* return error */
                 }
                 buf[0] = (addr >> 24) & 0xFF;                                                             /* 31 - 24 bits */
@@ -3900,8 +3900,8 @@ uint8_t w25qxx_fast_read_dual_output(w25qxx_handle_t *handle, uint32_t addr, uin
                                                NULL, 0x00, 1);                                            /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
@@ -3912,8 +3912,8 @@ uint8_t w25qxx_fast_read_dual_output(w25qxx_handle_t *handle, uint32_t addr, uin
                                            data, len, 2);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: fast read dual output failed.\n");                           /* fast read dual output failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: fast read dual output failed.\n");                           /* fast read dual output failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
@@ -3926,25 +3926,25 @@ uint8_t w25qxx_fast_read_dual_output(w25qxx_handle_t *handle, uint32_t addr, uin
                                            data, len, 2);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: fast read dual output failed.\n");                           /* fast read dual output failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: fast read dual output failed.\n");                           /* fast read dual output failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
+
             return 4;                                                                                     /* return error */
         }
     }
     else
     {
-        handle->debug_print("w25qxx: qspi can't use this function.\n");                                   /* qspi can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: qspi can't use this function.\n");                                   /* qspi can't use this function */
+
         return 5;                                                                                         /* return error */
     }
-    
+
     return 0;                                                                                             /* success return 0 */
 }
 
@@ -3968,22 +3968,22 @@ uint8_t w25qxx_fast_read_quad_output(w25qxx_handle_t *handle, uint32_t addr, uin
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                                                   /* check handle */
     {
         return 2;                                                                                         /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                              /* check handle initialization */
     {
         return 3;                                                                                         /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                         /* spi interface */
     {
         if (handle->dual_quad_spi_enable == 0)                                                            /* check spi */
         {
-            handle->debug_print("w25qxx: standard spi can't use this function failed.\n");                /* standard spi can't use this function failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: standard spi can't use this function failed.\n");                /* standard spi can't use this function failed */
+
             return 6;                                                                                     /* return error */
         }
         if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                           /* 3 address mode */
@@ -3997,8 +3997,8 @@ uint8_t w25qxx_fast_read_quad_output(w25qxx_handle_t *handle, uint32_t addr, uin
                                                NULL, 0x00, 0x00);                                         /* qspi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                /* write enable failed */
+
                     return 1;                                                                             /* return error */
                 }
                 buf[0] = (addr >> 24) & 0xFF;                                                             /* 31 - 24 bits */
@@ -4009,8 +4009,8 @@ uint8_t w25qxx_fast_read_quad_output(w25qxx_handle_t *handle, uint32_t addr, uin
                                                NULL, 0x00, 1);                                            /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
@@ -4021,8 +4021,8 @@ uint8_t w25qxx_fast_read_quad_output(w25qxx_handle_t *handle, uint32_t addr, uin
                                            data, len, 4);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: fast read quad output failed.\n");                           /* fast read quad output failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: fast read quad output failed.\n");                           /* fast read quad output failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
@@ -4035,25 +4035,25 @@ uint8_t w25qxx_fast_read_quad_output(w25qxx_handle_t *handle, uint32_t addr, uin
                                            data, len, 4);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: fast read quad output failed.\n");                           /* fast read quad output failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: fast read quad output failed.\n");                           /* fast read quad output failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
+
             return 4;                                                                                     /* return error */
         }
     }
     else
     {
-        handle->debug_print("w25qxx: qspi can't use this function.\n");                                   /* qspi can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: qspi can't use this function.\n");                                   /* qspi can't use this function */
+
         return 5;                                                                                         /* return error */
     }
-    
+
     return 0;                                                                                             /* success return 0 */
 }
 
@@ -4077,22 +4077,22 @@ uint8_t w25qxx_fast_read_dual_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                                                   /* check handle */
     {
         return 2;                                                                                         /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                              /* check handle initialization */
     {
         return 3;                                                                                         /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                         /* spi interface */
     {
         if (handle->dual_quad_spi_enable == 0)                                                            /* check spi */
         {
-            handle->debug_print("w25qxx: standard spi can't use this function failed.\n");                /* standard spi can't use this function failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: standard spi can't use this function failed.\n");                /* standard spi can't use this function failed */
+
             return 6;                                                                                     /* return error */
         }
         if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                           /* 3 address mode */
@@ -4106,8 +4106,8 @@ uint8_t w25qxx_fast_read_dual_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
                                                NULL, 0x00, 0x00);                                         /* qspi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                /* write enable failed */
+
                     return 1;                                                                             /* return error */
                 }
                 buf[0] = (addr >> 24) & 0xFF;                                                             /* 31 - 24 bits */
@@ -4118,8 +4118,8 @@ uint8_t w25qxx_fast_read_dual_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
                                                NULL, 0x00, 1);                                            /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
@@ -4130,8 +4130,8 @@ uint8_t w25qxx_fast_read_dual_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
                                            data, len, 2);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: fast read dual io failed.\n");                               /* fast read dual io failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: fast read dual io failed.\n");                               /* fast read dual io failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
@@ -4144,25 +4144,25 @@ uint8_t w25qxx_fast_read_dual_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
                                            data, len, 2);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: fast read dual io failed.\n");                               /* fast read io output failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: fast read dual io failed.\n");                               /* fast read io output failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
+
             return 4;                                                                                     /* return error */
         }
     }
     else
     {
-        handle->debug_print("w25qxx: qspi can't use this function.\n");                                   /* qspi can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: qspi can't use this function.\n");                                   /* qspi can't use this function */
+
         return 5;                                                                                         /* return error */
     }
-    
+
     return 0;                                                                                             /* success return 0 */
 }
 
@@ -4185,22 +4185,22 @@ uint8_t w25qxx_fast_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                                                   /* check handle */
     {
         return 2;                                                                                         /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                              /* check handle initialization */
     {
         return 3;                                                                                         /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                         /* spi interface */
     {
         if (handle->dual_quad_spi_enable == 0)                                                            /* check spi */
         {
-            handle->debug_print("w25qxx: standard spi can't use this function failed.\n");                /* standard spi can't use this function failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: standard spi can't use this function failed.\n");                /* standard spi can't use this function failed */
+
             return 6;                                                                                     /* return error */
         }
         if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                           /* 3 address mode */
@@ -4214,8 +4214,8 @@ uint8_t w25qxx_fast_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
                                                NULL, 0x00, 0x00);                                         /* qspi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                /* write enable failed */
+
                     return 1;                                                                             /* return error */
                 }
                 buf[0] = (addr >> 24) & 0xFF;                                                             /* 31 - 24 bits */
@@ -4226,8 +4226,8 @@ uint8_t w25qxx_fast_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
                                                NULL, 0x00, 1);                                            /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
@@ -4238,8 +4238,8 @@ uint8_t w25qxx_fast_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
                                            data, len, 4);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: fast read quad io failed.\n");                               /* fast read quad io failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: fast read quad io failed.\n");                               /* fast read quad io failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
@@ -4252,15 +4252,15 @@ uint8_t w25qxx_fast_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
                                            data, len, 4);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: fast read quad io failed.\n");                               /* fast quad io output failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: fast read quad io failed.\n");                               /* fast quad io output failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
+
             return 4;                                                                                     /* return error */
         }
     }
@@ -4277,8 +4277,8 @@ uint8_t w25qxx_fast_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
                                                NULL, 0x00, 0x00);                                         /* qspi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                /* write enable failed */
+
                     return 1;                                                                             /* return error */
                 }
                 buf[0] = (addr >> 24) & 0xFF;                                                             /* 31 - 24 bits */
@@ -4289,8 +4289,8 @@ uint8_t w25qxx_fast_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
                                                NULL, 0x00, 4);                                            /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
@@ -4301,8 +4301,8 @@ uint8_t w25qxx_fast_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
                                            data, len, 4);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: fast read quad io failed.\n");                               /* fast read quad io failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: fast read quad io failed.\n");                               /* fast read quad io failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
@@ -4315,19 +4315,19 @@ uint8_t w25qxx_fast_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
                                            data, len, 4);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: fast read quad io failed.\n");                               /* fast quad io output failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: fast read quad io failed.\n");                               /* fast quad io output failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
+
             return 4;                                                                                     /* return error */
         }
     }
-    
+
     return 0;                                                                                             /* success return 0 */
 }
 
@@ -4351,22 +4351,22 @@ uint8_t w25qxx_word_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                                                   /* check handle */
     {
         return 2;                                                                                         /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                              /* check handle initialization */
     {
         return 3;                                                                                         /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                         /* spi interface */
     {
         if (handle->dual_quad_spi_enable == 0)                                                            /* check spi */
         {
-            handle->debug_print("w25qxx: standard spi can't use this function failed.\n");                /* standard spi can't use this function failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: standard spi can't use this function failed.\n");                /* standard spi can't use this function failed */
+
             return 6;                                                                                     /* return error */
         }
         if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                           /* 3 address mode */
@@ -4380,8 +4380,8 @@ uint8_t w25qxx_word_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
                                                NULL, 0x00, 0x00);                                         /* qspi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                /* write enable failed */
+
                     return 1;                                                                             /* return error */
                 }
                 buf[0] = (addr >> 24) & 0xFF;                                                             /* 31 - 24 bits */
@@ -4392,8 +4392,8 @@ uint8_t w25qxx_word_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
                                                NULL, 0x00, 1);                                            /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
@@ -4404,8 +4404,8 @@ uint8_t w25qxx_word_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
                                            data, len, 4);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: word read quad io failed.\n");                               /* word read quad io failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: word read quad io failed.\n");                               /* word read quad io failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
@@ -4418,25 +4418,25 @@ uint8_t w25qxx_word_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, uint8_t
                                            data, len, 4);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: word read quad io failed.\n");                               /* word read quad io failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: word read quad io failed.\n");                               /* word read quad io failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
+
             return 4;                                                                                     /* return error */
         }
     }
     else
     {
-        handle->debug_print("w25qxx: qspi can't use this function.\n");                                   /* qspi can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: qspi can't use this function.\n");                                   /* qspi can't use this function */
+
         return 5;                                                                                         /* return error */
     }
-    
+
     return 0;                                                                                             /* success return 0 */
 }
 
@@ -4460,22 +4460,22 @@ uint8_t w25qxx_octal_word_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, u
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                                                   /* check handle */
     {
         return 2;                                                                                         /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                              /* check handle initialization */
     {
         return 3;                                                                                         /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                         /* spi interface */
     {
         if (handle->dual_quad_spi_enable == 0)                                                            /* check spi */
         {
-            handle->debug_print("w25qxx: standard spi can't use this function failed.\n");                /* standard spi can't use this function failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: standard spi can't use this function failed.\n");                /* standard spi can't use this function failed */
+
             return 6;                                                                                     /* return error */
         }
         if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                           /* 3 address mode */
@@ -4489,8 +4489,8 @@ uint8_t w25qxx_octal_word_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, u
                                                NULL, 0x00, 0x00);                                         /* qspi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                /* write enable failed */
+
                     return 1;                                                                             /* return error */
                 }
                 buf[0] = (addr >> 24) & 0xFF;                                                             /* 31 - 24 bits */
@@ -4501,8 +4501,8 @@ uint8_t w25qxx_octal_word_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, u
                                                NULL, 0x00, 1);                                            /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
@@ -4513,8 +4513,8 @@ uint8_t w25qxx_octal_word_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, u
                                            data, len, 4);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: octal word read quad io failed.\n");                         /* octal word read quad io failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: octal word read quad io failed.\n");                         /* octal word read quad io failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
@@ -4527,25 +4527,25 @@ uint8_t w25qxx_octal_word_read_quad_io(w25qxx_handle_t *handle, uint32_t addr, u
                                            data, len, 4);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: octal word read quad io failed.\n");                         /* octal word read quad io failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: octal word read quad io failed.\n");                         /* octal word read quad io failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
+
             return 4;                                                                                     /* return error */
         }
     }
     else
     {
-        handle->debug_print("w25qxx: qspi can't use this function.\n");                                   /* qspi can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: qspi can't use this function.\n");                                   /* qspi can't use this function */
+
         return 5;                                                                                         /* return error */
     }
-    
+
     return 0;                                                                                             /* success return 0 */
 }
 
@@ -4572,28 +4572,28 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
     uint8_t status;
     uint32_t timeout;
     uint8_t buf[2];
-    
+
     if (handle == NULL)                                                                                     /* check handle */
     {
         return 2;                                                                                           /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                                /* check handle initialization */
     {
         return 3;                                                                                           /* return error */
     }
     if ((addr % 256) != 0)                                                                                  /* check address */
     {
-        handle->debug_print("w25qxx: addr is invalid.\n");                                                  /* addr is invalid */
-       
+        handle->debug_print(handle->extra, "w25qxx: addr is invalid.\n");                                                  /* addr is invalid */
+
         return 4;                                                                                           /* return error */
     }
     if (len > 256)                                                                                          /* check address */
     {
-        handle->debug_print("w25qxx: length is over 256.\n");                                               /* length is over 256 */
-       
+        handle->debug_print(handle->extra, "w25qxx: length is over 256.\n");                                               /* length is over 256 */
+
         return 7;                                                                                           /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                           /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                              /* enable dual quad spi */
@@ -4605,8 +4605,8 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                                            NULL, 0x00, 0x00);                                               /* qspi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                      /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                      /* write enable failed */
+
                 return 1;                                                                                   /* return error */
             }
             if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                         /* 3 address mode */
@@ -4621,8 +4621,8 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                                                    NULL, 0x00, 1);                                          /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                     res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_WRITE_ENABLE, 1,
@@ -4632,8 +4632,8 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                                                    NULL, 0x00, 0x00);                                       /* qspi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -4644,8 +4644,8 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                                                NULL, 0x00, 1);                                              /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: page program failed.\n");                                  /* page program failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: page program failed.\n");                                  /* page program failed */
+
                       return 1;                                                                             /* return error */
                 }
             }
@@ -4658,18 +4658,18 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                                                NULL, 0x00, 1);                                              /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: page program failed.\n");                                  /* page program failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: page program failed.\n");                                  /* page program failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 5;                                                                                   /* return error */
             }
-            
+
             timeout = 3 * 100;                                                                              /* max 3 ms */
             while (timeout != 0)                                                                            /* check timeout */
             {
@@ -4680,8 +4680,8 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                                               (uint8_t *)&status, 1, 1);                                    /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: page program failed.\n");                                  /* page program failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: page program failed.\n");                                  /* page program failed */
+
                     return 1;                                                                               /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                                /* check status */
@@ -4689,12 +4689,12 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                     break;                                                                                  /* break */
                 }
                 timeout--;                                                                                  /* timeout-- */
-                handle->delay_us(10);                                                                       /* delay 10 us */
+                handle->delay_us(handle->extra, 10);                                                                       /* delay 10 us */
             }
             if (timeout == 0)
             {
-                handle->debug_print("w25qxx: page program timeout.\n");                                     /* page program timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: page program timeout.\n");                                     /* page program timeout */
+
                 return 6;                                                                                   /* return error */
             }
         }
@@ -4704,8 +4704,8 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                              /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                      /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                      /* write enable failed */
+
                 return 1;                                                                                   /* return error */
             }
             if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                         /* 3 address mode */
@@ -4717,16 +4717,16 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 2, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                     buf[0] = W25QXX_COMMAND_WRITE_ENABLE;                                                   /* write enable command */
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -4738,8 +4738,8 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)handle->buf, 4 + len, NULL, 0);            /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: page program failed.\n");                                  /* page program failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: page program failed.\n");                                  /* page program failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -4755,18 +4755,18 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)handle->buf, 5 + len, NULL, 0);            /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: page program failed.\n");                                  /* page program failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: page program failed.\n");                                  /* page program failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 5;                                                                                   /* return error */
             }
-            
+
             timeout = 3 * 100;                                                                              /* max 3 ms */
             while (timeout != 0)                                                                            /* check timeout */
             {
@@ -4774,8 +4774,8 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, (uint8_t *)&status, 1);            /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                   /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                   /* get status1 failed */
+
                     return 1;                                                                               /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                                /* check status */
@@ -4783,12 +4783,12 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                     break;                                                                                  /* break */
                 }
                 timeout--;                                                                                  /* timeout-- */
-                handle->delay_us(10);                                                                       /* delay 10 us */
+                handle->delay_us(handle->extra, 10);                                                                       /* delay 10 us */
             }
             if (timeout == 0)
             {
-                handle->debug_print("w25qxx: page program timeout.\n");                                     /* page program timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: page program timeout.\n");                                     /* page program timeout */
+
                 return 6;                                                                                   /* return error */
             }
         }
@@ -4802,8 +4802,8 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                                        NULL, 0x00, 0x00);                                                   /* qspi write read */
         if (res != 0)                                                                                       /* check result */
         {
-            handle->debug_print("w25qxx: write enable failed.\n");                                          /* write enable failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                          /* write enable failed */
+
             return 1;                                                                                       /* return error */
         }
         if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                             /* 3 address mode */
@@ -4818,8 +4818,8 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                                                NULL, 0x00, 4);                                              /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
+
                     return 1;                                                                               /* return error */
                 }
                 res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_WRITE_ENABLE, 4,
@@ -4829,8 +4829,8 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                                                NULL, 0x00, 0x00);                                           /* qspi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                  /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                  /* write enable failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -4841,8 +4841,8 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                                            NULL, 0x00, 4);                                                  /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: page program failed.\n");                                      /* page program failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: page program failed.\n");                                      /* page program failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
@@ -4855,18 +4855,18 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                                            NULL, 0x00, 4);                                                  /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: page program failed.\n");                                      /* page program failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: page program failed.\n");                                      /* page program failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
+
             return 5;                                                                                       /* return error */
         }
-        
+
         timeout = 3 * 100;                                                                                  /* max 3 ms */
         while (timeout != 0)                                                                                /* check timeout */
         {
@@ -4877,8 +4877,8 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                                           (uint8_t *)&status, 1, 4);                                        /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: page program failed.\n");                                      /* page program failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: page program failed.\n");                                      /* page program failed */
+
                 return 1;                                                                                   /* return error */
             }
             if ((status & 0x01) == 0x00)                                                                    /* check status */
@@ -4886,16 +4886,16 @@ uint8_t w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uint8_t *dat
                 break;                                                                                      /* break */
             }
             timeout--;                                                                                      /* timeout-- */
-            handle->delay_us(10);                                                                           /* delay 10 us */
+            handle->delay_us(handle->extra, 10);                                                                           /* delay 10 us */
         }
         if (timeout == 0)
         {
-            handle->debug_print("w25qxx: page program timeout.\n");                                         /* page program timeout */
-           
+            handle->debug_print(handle->extra, "w25qxx: page program timeout.\n");                                         /* page program timeout */
+
             return 6;                                                                                       /* return error */
         }
     }
-    
+
     return 0;                                                                                               /* success return 0 */
 }
 
@@ -4923,40 +4923,40 @@ uint8_t w25qxx_page_program_quad_input(w25qxx_handle_t *handle, uint32_t addr, u
     uint8_t status;
     uint32_t timeout;
     uint8_t buf[2];
-    
+
     if (handle == NULL)                                                                                     /* check handle */
     {
         return 2;                                                                                           /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                                /* check handle initialization */
     {
         return 3;                                                                                           /* return error */
     }
     if ((addr % 256) != 0)                                                                                  /* check address */
     {
-        handle->debug_print("w25qxx: addr is invalid.\n");                                                  /* addr is invalid */
-       
+        handle->debug_print(handle->extra, "w25qxx: addr is invalid.\n");                                                  /* addr is invalid */
+
         return 4;                                                                                           /* return error */
     }
     if (len > 256)                                                                                          /* check address */
     {
-        handle->debug_print("w25qxx: length is over 256.\n");                                               /* length is over 256 */
-       
+        handle->debug_print(handle->extra, "w25qxx: length is over 256.\n");                                               /* length is over 256 */
+
         return 7;                                                                                           /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_QSPI)                                                          /* qspi interface */
     {
-        handle->debug_print("w25qxx: qspi can't use this function.\n");                                     /* qspi can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: qspi can't use this function.\n");                                     /* qspi can't use this function */
+
         return 5;                                                                                           /* return error */
     }
     else
     {
         if (handle->dual_quad_spi_enable == 0)                                                              /* check spi */
         {
-            handle->debug_print("w25qxx: standard spi can't use this function failed.\n");                  /* standard spi can't use this function failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: standard spi can't use this function failed.\n");                  /* standard spi can't use this function failed */
+
             return 8;                                                                                       /* return error */
         }
         res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_WRITE_ENABLE, 1,
@@ -4966,8 +4966,8 @@ uint8_t w25qxx_page_program_quad_input(w25qxx_handle_t *handle, uint32_t addr, u
                                        NULL, 0x00, 0x00);                                                   /* qspi write read */
         if (res != 0)                                                                                       /* check result */
         {
-            handle->debug_print("w25qxx: write enable failed.\n");                                          /* write enable failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                          /* write enable failed */
+
             return 1;                                                                                       /* return error */
         }
         if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                             /* 3 address mode */
@@ -4982,8 +4982,8 @@ uint8_t w25qxx_page_program_quad_input(w25qxx_handle_t *handle, uint32_t addr, u
                                                NULL, 0x00, 1);                                              /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
+
                     return 1;                                                                               /* return error */
                 }
                 res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_WRITE_ENABLE, 1,
@@ -4993,8 +4993,8 @@ uint8_t w25qxx_page_program_quad_input(w25qxx_handle_t *handle, uint32_t addr, u
                                                NULL, 0x00, 0x00);                                           /* qspi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                  /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                  /* write enable failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -5005,8 +5005,8 @@ uint8_t w25qxx_page_program_quad_input(w25qxx_handle_t *handle, uint32_t addr, u
                                            NULL, 0x00, 4);                                                  /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: quad page program failed.\n");                                 /* quad page program failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: quad page program failed.\n");                                 /* quad page program failed */
+
                   return 1;                                                                                 /* return error */
             }
         }
@@ -5019,18 +5019,18 @@ uint8_t w25qxx_page_program_quad_input(w25qxx_handle_t *handle, uint32_t addr, u
                                            NULL, 0x00, 4);                                                  /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: quad page program failed.\n");                                 /* quad page program failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: quad page program failed.\n");                                 /* quad page program failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
+
             return 5;                                                                                       /* return error */
         }
-        
+
         timeout = 3 * 100;                                                                                  /* max 3 ms */
         while (timeout != 0)                                                                                /* check timeout */
         {
@@ -5041,8 +5041,8 @@ uint8_t w25qxx_page_program_quad_input(w25qxx_handle_t *handle, uint32_t addr, u
                                           (uint8_t *)&status, 1, 1);                                        /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: get status1 failed.\n");                                       /* get status1 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                       /* get status1 failed */
+
                 return 1;                                                                                   /* return error */
             }
             if ((status & 0x01) == 0x00)                                                                    /* check status */
@@ -5050,16 +5050,16 @@ uint8_t w25qxx_page_program_quad_input(w25qxx_handle_t *handle, uint32_t addr, u
                 break;                                                                                      /* break */
             }
             timeout--;                                                                                      /* timeout-- */
-            handle->delay_us(10);                                                                           /* delay 10 us */
+            handle->delay_us(handle->extra, 10);                                                                           /* delay 10 us */
         }
         if (timeout == 0)
         {
-            handle->debug_print("w25qxx: quad page program timeout.\n");                                    /* quad page program timeout */
-           
+            handle->debug_print(handle->extra, "w25qxx: quad page program timeout.\n");                                    /* quad page program timeout */
+
             return 6;                                                                                       /* return error */
         }
     }
-    
+
     return 0;                                                                                               /* success return 0 */
 }
 
@@ -5083,22 +5083,22 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
     uint8_t status;
     uint32_t timeout;
     uint8_t buf[5];
-    
+
     if (handle == NULL)                                                                                     /* check handle */
     {
         return 2;                                                                                           /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                                /* check handle initialization */
     {
         return 3;                                                                                           /* return error */
     }
     if ((addr % 4096) != 0)                                                                                 /* check address */
     {
-        handle->debug_print("w25qxx: addr is invalid.\n");                                                  /* addr is invalid */
-       
+        handle->debug_print(handle->extra, "w25qxx: addr is invalid.\n");                                                  /* addr is invalid */
+
         return 4;                                                                                           /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                           /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                              /* enable dual quad spi */
@@ -5110,8 +5110,8 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                                            NULL, 0x00, 0x00);                                               /* qspi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                      /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                      /* write enable failed */
+
                 return 1;                                                                                   /* return error */
             }
             if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                         /* 3 address mode */
@@ -5126,8 +5126,8 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                                                    NULL, 0x00, 1);                                          /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                     res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_WRITE_ENABLE, 1,
@@ -5137,8 +5137,8 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                                                    NULL, 0x00, 0x00);                                       /* qspi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -5149,8 +5149,8 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: sector erase 4k failed.\n");                               /* sector erase 4k failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: sector erase 4k failed.\n");                               /* sector erase 4k failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -5163,18 +5163,18 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: sector erase 4k failed.\n");                               /* sector erase 4k failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: sector erase 4k failed.\n");                               /* sector erase 4k failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 5;                                                                                   /* return error */
             }
-            
+
             timeout = 400;                                                                                  /* max 400 ms */
             while (timeout != 0)                                                                            /* check timeout */
             {
@@ -5185,8 +5185,8 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                                               (uint8_t *)&status, 1, 1);                                    /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                   /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                   /* get status1 failed */
+
                     return 1;                                                                               /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                                /* check status */
@@ -5194,12 +5194,12 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                     break;                                                                                  /* break */
                 }
                 timeout--;                                                                                  /* timeout-- */
-                handle->delay_ms(1);                                                                        /* delay 1 ms */
+                handle->delay_ms(handle->extra, 1);                                                                        /* delay 1 ms */
             }
             if (timeout == 0)
             {
-                handle->debug_print("w25qxx: sector erase 4k timeout.\n");                                  /* sector erase 4k timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: sector erase 4k timeout.\n");                                  /* sector erase 4k timeout */
+
                 return 6;                                                                                   /* return error */
             }
         }
@@ -5209,8 +5209,8 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                              /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                      /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                      /* write enable failed */
+
                 return 1;                                                                                   /* return error */
             }
             if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                         /* 3 address mode */
@@ -5222,16 +5222,16 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 2, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                     buf[0] = W25QXX_COMMAND_WRITE_ENABLE;                                                   /* write enable command */
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -5242,8 +5242,8 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 4, NULL, 0);                          /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: sector erase 4k failed.\n");                               /* sector erase 4k failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: sector erase 4k failed.\n");                               /* sector erase 4k failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -5258,18 +5258,18 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 5, NULL, 0);                          /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: sector erase 4k failed.\n");                               /* sector erase 4k failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: sector erase 4k failed.\n");                               /* sector erase 4k failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 5;                                                                                   /* return error */
             }
-            
+
             timeout = 400;                                                                                  /* max 400 ms */
             while (timeout != 0)                                                                            /* check timeout */
             {
@@ -5277,8 +5277,8 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, (uint8_t *)&status, 1);            /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                   /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                   /* get status1 failed */
+
                     return 1;                                                                               /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                                /* check status */
@@ -5286,12 +5286,12 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                     break;                                                                                  /* break */
                 }
                 timeout--;                                                                                  /* timeout-- */
-                handle->delay_ms(1);                                                                        /* delay 1 ms */
+                handle->delay_ms(handle->extra, 1);                                                                        /* delay 1 ms */
             }
             if (timeout == 0)
             {
-                handle->debug_print("w25qxx: sector erase 4k timeout.\n");                                  /* sector erase 4k timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: sector erase 4k timeout.\n");                                  /* sector erase 4k timeout */
+
                 return 6;                                                                                   /* return error */
             }
         }
@@ -5305,8 +5305,8 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                                        NULL, 0x00, 0x00);                                                   /* qspi write read */
         if (res != 0)                                                                                       /* check result */
         {
-            handle->debug_print("w25qxx: write enable failed.\n");                                          /* write enable failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                          /* write enable failed */
+
             return 1;                                                                                       /* return error */
         }
         if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                             /* 3 address mode */
@@ -5321,8 +5321,8 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 4);                                              /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
+
                     return 1;                                                                               /* return error */
                 }
                 res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_WRITE_ENABLE, 4,
@@ -5332,8 +5332,8 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* qspi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                  /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                  /* write enable failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -5344,8 +5344,8 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                                            NULL, 0x00, 0x00);                                               /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: sector erase 4k failed.\n");                                   /* sector erase 4k failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: sector erase 4k failed.\n");                                   /* sector erase 4k failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
@@ -5358,18 +5358,18 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                                            NULL, 0x00, 0x00);                                               /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: sector erase 4k failed.\n");                                   /* sector erase 4k failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: sector erase 4k failed.\n");                                   /* sector erase 4k failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
+
             return 5;                                                                                       /* return error */
         }
-        
+
         timeout = 400;                                                                                      /* max 400 ms */
         while (timeout != 0)                                                                                /* check timeout */
         {
@@ -5380,8 +5380,8 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                                           (uint8_t *)&status, 1, 4);                                        /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: get status1 failed.\n");                                       /* get status1 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                       /* get status1 failed */
+
                 return 1;                                                                                   /* return error */
             }
             if ((status & 0x01) == 0x00)                                                                    /* check status */
@@ -5389,16 +5389,16 @@ uint8_t w25qxx_sector_erase_4k(w25qxx_handle_t *handle, uint32_t addr)
                 break;                                                                                      /* break */
             }
             timeout--;                                                                                      /* timeout-- */
-            handle->delay_ms(1);                                                                            /* delay 1 ms */
+            handle->delay_ms(handle->extra, 1);                                                                            /* delay 1 ms */
         }
         if (timeout == 0)
         {
-            handle->debug_print("w25qxx: sector erase 4k timeout.\n");                                      /* sector erase 4k timeout */
-           
+            handle->debug_print(handle->extra, "w25qxx: sector erase 4k timeout.\n");                                      /* sector erase 4k timeout */
+
             return 6;                                                                                       /* return error */
         }
     }
-    
+
     return 0;                                                                                               /* success return 0 */
 }
 
@@ -5422,22 +5422,22 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
     uint8_t status;
     uint32_t timeout;
     uint8_t buf[5];
-    
+
     if (handle == NULL)                                                                                     /* check handle */
     {
         return 2;                                                                                           /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                                /* check handle initialization */
     {
         return 3;                                                                                           /* return error */
     }
     if ((addr % (32 * 1024)) != 0)                                                                          /* check address */
     {
-        handle->debug_print("w25qxx: addr is invalid.\n");                                                  /* addr is invalid */
-       
+        handle->debug_print(handle->extra, "w25qxx: addr is invalid.\n");                                                  /* addr is invalid */
+
         return 4;                                                                                           /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                           /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                              /* enable dual quad spi */
@@ -5449,8 +5449,8 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                                            NULL, 0x00, 0x00);                                               /* qspi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                      /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                      /* write enable failed */
+
                 return 1;                                                                                   /* return error */
             }
             if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                         /* 3 address mode */
@@ -5465,8 +5465,8 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                                                    NULL, 0x00, 1);                                          /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                     res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_WRITE_ENABLE, 1,
@@ -5476,8 +5476,8 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                                                    NULL, 0x00, 0x00);                                       /* qspi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -5488,8 +5488,8 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: block erase 32k failed.\n");                               /* block erase 32k failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: block erase 32k failed.\n");                               /* block erase 32k failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -5502,18 +5502,18 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: block erase 32k failed.\n");                               /* block erase 32k failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: block erase 32k failed.\n");                               /* block erase 32k failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 5;                                                                                   /* return error */
             }
-            
+
             timeout = 1600;                                                                                 /* max 1600 ms */
             while (timeout != 0)                                                                            /* check timeout */
             {
@@ -5524,8 +5524,8 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                                               (uint8_t *)&status, 1, 1);                                    /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                   /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                   /* get status1 failed */
+
                     return 1;                                                                               /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                                /* check status */
@@ -5533,12 +5533,12 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                     break;                                                                                  /* break */
                 }
                 timeout--;                                                                                  /* timeout-- */
-                handle->delay_ms(1);                                                                        /* delay 1 ms */
+                handle->delay_ms(handle->extra, 1);                                                                        /* delay 1 ms */
             }
             if (timeout == 0)
             {
-                handle->debug_print("w25qxx: block erase 32k timeout.\n");                                  /* block erase 32k timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: block erase 32k timeout.\n");                                  /* block erase 32k timeout */
+
                 return 6;                                                                                   /* return error */
             }
         }
@@ -5548,8 +5548,8 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                              /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                      /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                      /* write enable failed */
+
                 return 1;                                                                                   /* return error */
             }
             if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                         /* 3 address mode */
@@ -5561,16 +5561,16 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 2, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                     buf[0] = W25QXX_COMMAND_WRITE_ENABLE;                                                   /* write enable command */
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -5581,8 +5581,8 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 4, NULL, 0);                          /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: block erase 32k failed.\n");                               /* block erase 32k failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: block erase 32k failed.\n");                               /* block erase 32k failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -5597,18 +5597,18 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 5, NULL, 0);                          /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: block erase 32k failed.\n");                               /* block erase 32k failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: block erase 32k failed.\n");                               /* block erase 32k failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 5;                                                                                   /* return error */
             }
-            
+
             timeout = 1600;                                                                                 /* max 1600 ms */
             while (timeout != 0)                                                                            /* check timeout */
             {
@@ -5616,8 +5616,8 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, (uint8_t *)&status, 1);            /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                   /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                   /* get status1 failed */
+
                     return 1;                                                                               /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                                /* check status */
@@ -5625,12 +5625,12 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                     break;                                                                                  /* break */
                 }
                 timeout--;                                                                                  /* timeout-- */
-                handle->delay_ms(1);                                                                        /* delay 1 ms */
+                handle->delay_ms(handle->extra, 1);                                                                        /* delay 1 ms */
             }
             if (timeout == 0)
             {
-                handle->debug_print("w25qxx: block erase 32k timeout.\n");                                  /* block erase 32k timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: block erase 32k timeout.\n");                                  /* block erase 32k timeout */
+
                 return 6;                                                                                   /* return error */
             }
         }
@@ -5644,8 +5644,8 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                                        NULL, 0x00, 0x00);                                                   /* qspi write read */
         if (res != 0)                                                                                       /* check result */
         {
-            handle->debug_print("w25qxx: write enable failed.\n");                                          /* write enable failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                          /* write enable failed */
+
             return 1;                                                                                       /* return error */
         }
         if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                             /* 3 address mode */
@@ -5660,8 +5660,8 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 4);                                              /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
+
                     return 1;                                                                               /* return error */
                 }
                 res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_WRITE_ENABLE, 4,
@@ -5671,8 +5671,8 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* qspi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                  /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                  /* write enable failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -5683,8 +5683,8 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                                            NULL, 0x00, 0x00);                                               /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: block erase 32k failed.\n");                                   /* block erase 32k failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: block erase 32k failed.\n");                                   /* block erase 32k failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
@@ -5697,18 +5697,18 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                                            NULL, 0x00, 0x00);                                               /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: block erase 32k failed.\n");                                   /* block erase 32k failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: block erase 32k failed.\n");                                   /* block erase 32k failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
+
             return 5;                                                                                       /* return error */
         }
-        
+
         timeout = 1600;                                                                                     /* max 1600 ms */
         while (timeout != 0)                                                                                /* check timeout */
         {
@@ -5719,8 +5719,8 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                                           (uint8_t *)&status, 1, 4);                                        /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: get status1 failed.\n");                                       /* get status1 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                       /* get status1 failed */
+
                 return 1;                                                                                   /* return error */
             }
             if ((status & 0x01) == 0x00)                                                                    /* check status */
@@ -5728,16 +5728,16 @@ uint8_t w25qxx_block_erase_32k(w25qxx_handle_t *handle, uint32_t addr)
                 break;                                                                                      /* break */
             }
             timeout--;                                                                                      /* timeout-- */
-            handle->delay_ms(1);                                                                            /* delay 1 ms */
+            handle->delay_ms(handle->extra, 1);                                                                            /* delay 1 ms */
         }
         if (timeout == 0)
         {
-            handle->debug_print("w25qxx: block erase 32k timeout.\n");                                      /* block erase 32k timeout */
-           
+            handle->debug_print(handle->extra, "w25qxx: block erase 32k timeout.\n");                                      /* block erase 32k timeout */
+
             return 6;                                                                                       /* return error */
         }
     }
-    
+
     return 0;                                                                                               /* success return 0 */
 }
 
@@ -5761,22 +5761,22 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
     uint8_t status;
     uint32_t timeout;
     uint8_t buf[5];
-    
+
     if (handle == NULL)                                                                                     /* check handle */
     {
         return 2;                                                                                           /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                                /* check handle initialization */
     {
         return 3;                                                                                           /* return error */
     }
     if ((addr % (64 * 1024)) != 0)                                                                          /* check address */
     {
-        handle->debug_print("w25qxx: addr is invalid.\n");                                                  /* addr is invalid */
-       
+        handle->debug_print(handle->extra, "w25qxx: addr is invalid.\n");                                                  /* addr is invalid */
+
         return 4;                                                                                           /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                           /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                              /* enable dual quad spi */
@@ -5788,8 +5788,8 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                                            NULL, 0x00, 0x00);                                               /* qspi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                      /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                      /* write enable failed */
+
                 return 1;                                                                                   /* return error */
             }
             if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                         /* 3 address mode */
@@ -5804,8 +5804,8 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                                                    NULL, 0x00, 1);                                          /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                     res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_WRITE_ENABLE, 1,
@@ -5815,8 +5815,8 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                                                    NULL, 0x00, 0x00);                                       /* qspi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -5827,8 +5827,8 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: block erase 64k failed.\n");                               /* block erase 64k failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: block erase 64k failed.\n");                               /* block erase 64k failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -5841,18 +5841,18 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: block erase 64k failed.\n");                               /* block erase 64k failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: block erase 64k failed.\n");                               /* block erase 64k failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 5;                                                                                   /* return error */
             }
-            
+
             timeout = 2000;                                                                                 /* max 2000 ms */
             while (timeout != 0)                                                                            /* check timeout */
             {
@@ -5863,8 +5863,8 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                                               (uint8_t *)&status, 1, 1);                                    /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                   /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                   /* get status1 failed */
+
                     return 1;                                                                               /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                                /* check status */
@@ -5872,12 +5872,12 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                     break;                                                                                  /* break */
                 }
                 timeout--;                                                                                  /* timeout-- */
-                handle->delay_ms(1);                                                                        /* delay 1 ms */
+                handle->delay_ms(handle->extra, 1);                                                                        /* delay 1 ms */
             }
             if (timeout == 0)
             {
-                handle->debug_print("w25qxx: block erase 64k timeout.\n");                                  /* block erase 64k timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: block erase 64k timeout.\n");                                  /* block erase 64k timeout */
+
                 return 6;                                                                                   /* return error */
             }
         }
@@ -5887,8 +5887,8 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                              /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                      /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                      /* write enable failed */
+
                 return 1;                                                                                   /* return error */
             }
             if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                         /* 3 address mode */
@@ -5900,16 +5900,16 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 2, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                     buf[0] = W25QXX_COMMAND_WRITE_ENABLE;                                                   /* write enable command */
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -5920,8 +5920,8 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 4, NULL, 0);                          /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: block erase 64k failed.\n");                               /* block erase 64k failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: block erase 64k failed.\n");                               /* block erase 64k failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -5935,18 +5935,18 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 5, NULL, 0);                          /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: block erase 64k failed.\n");                               /* block erase 64k failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: block erase 64k failed.\n");                               /* block erase 64k failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 5;                                                                                   /* return error */
             }
-            
+
             timeout = 2000;                                                                                 /* max 2000 ms */
             while (timeout != 0)                                                                            /* check timeout */
             {
@@ -5954,8 +5954,8 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, (uint8_t *)&status, 1);            /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                   /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                   /* get status1 failed */
+
                     return 1;                                                                               /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                                /* check status */
@@ -5963,12 +5963,12 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                     break;                                                                                  /* break */
                 }
                 timeout--;                                                                                  /* timeout-- */
-                handle->delay_ms(1);                                                                        /* delay 1 ms */
+                handle->delay_ms(handle->extra, 1);                                                                        /* delay 1 ms */
             }
             if (timeout == 0)
             {
-                handle->debug_print("w25qxx: block erase 64k timeout.\n");                                  /* block erase 64k timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: block erase 64k timeout.\n");                                  /* block erase 64k timeout */
+
                 return 6;                                                                                   /* return error */
             }
         }
@@ -5982,8 +5982,8 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                                        NULL, 0x00, 0x00);                                                   /* qspi write read */
         if (res != 0)                                                                                       /* check result */
         {
-            handle->debug_print("w25qxx: write enable failed.\n");                                          /* write enable failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                          /* write enable failed */
+
             return 1;                                                                                       /* return error */
         }
         if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                             /* 3 address mode */
@@ -5998,8 +5998,8 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 4);                                              /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
+
                     return 1;                                                                               /* return error */
                 }
                 res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_WRITE_ENABLE, 4,
@@ -6009,8 +6009,8 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* qspi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                  /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                  /* write enable failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -6021,8 +6021,8 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                                            NULL, 0x00, 0x00);                                               /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: block erase 64k failed.\n");                                   /* block erase 64k failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: block erase 64k failed.\n");                                   /* block erase 64k failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
@@ -6035,18 +6035,18 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                                            NULL, 0x00, 0x00);                                               /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: block erase 64k failed.\n");                                   /* block erase 64k failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: block erase 64k failed.\n");                                   /* block erase 64k failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
+
             return 5;                                                                                       /* return error */
         }
-        
+
         timeout = 2000;                                                                                     /* max 2000 ms */
         while (timeout != 0)                                                                                /* check timeout */
         {
@@ -6057,8 +6057,8 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                                           (uint8_t *)&status, 1, 4);                                        /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: get status1 failed.\n");                                       /* get status1 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                       /* get status1 failed */
+
                 return 1;                                                                                   /* return error */
             }
             if ((status & 0x01) == 0x00)                                                                    /* check status */
@@ -6066,16 +6066,16 @@ uint8_t w25qxx_block_erase_64k(w25qxx_handle_t *handle, uint32_t addr)
                 break;                                                                                      /* break */
             }
             timeout--;                                                                                      /* timeout-- */
-            handle->delay_ms(1);                                                                            /* delay 1 ms */
+            handle->delay_ms(handle->extra, 1);                                                                            /* delay 1 ms */
         }
         if (timeout == 0)
         {
-            handle->debug_print("w25qxx: block erase 64k timeout.\n");                                      /* block erase 64k timeout */
-           
+            handle->debug_print(handle->extra, "w25qxx: block erase 64k timeout.\n");                                      /* block erase 64k timeout */
+
             return 6;                                                                                       /* return error */
         }
     }
-    
+
     return 0;                                                                                               /* success return 0 */
 }
 
@@ -6095,16 +6095,16 @@ uint8_t w25qxx_individual_block_lock(w25qxx_handle_t *handle, uint32_t addr)
 {
     uint8_t res;
     uint8_t buf[5];
-    
+
     if (handle == NULL)                                                                                     /* check handle */
     {
         return 2;                                                                                           /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                                /* check handle initialization */
     {
         return 3;                                                                                           /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                           /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                              /* enable dual quad spi */
@@ -6120,8 +6120,8 @@ uint8_t w25qxx_individual_block_lock(w25qxx_handle_t *handle, uint32_t addr)
                                                    NULL, 0x00, 0x00);                                       /* qspi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                     buf[0] = (addr >> 24) & 0xFF;                                                           /* 31 - 24 bits */
@@ -6132,8 +6132,8 @@ uint8_t w25qxx_individual_block_lock(w25qxx_handle_t *handle, uint32_t addr)
                                                    NULL, 0x00, 1);                                          /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -6144,8 +6144,8 @@ uint8_t w25qxx_individual_block_lock(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: individual block lock failed.\n");                         /* individual block lock failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: individual block lock failed.\n");                         /* individual block lock failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -6158,15 +6158,15 @@ uint8_t w25qxx_individual_block_lock(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: individual block lock failed.\n");                         /* individual block lock failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: individual block lock failed.\n");                         /* individual block lock failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 4;                                                                                   /* return error */
             }
         }
@@ -6180,8 +6180,8 @@ uint8_t w25qxx_individual_block_lock(w25qxx_handle_t *handle, uint32_t addr)
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                     buf[0] = 0xC5;                                                                          /* write extended addr register command */
@@ -6189,8 +6189,8 @@ uint8_t w25qxx_individual_block_lock(w25qxx_handle_t *handle, uint32_t addr)
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 2, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -6201,8 +6201,8 @@ uint8_t w25qxx_individual_block_lock(w25qxx_handle_t *handle, uint32_t addr)
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 4, NULL, 0);                          /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: individual block lock failed.\n");                         /* individual block lock failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: individual block lock failed.\n");                         /* individual block lock failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -6216,15 +6216,15 @@ uint8_t w25qxx_individual_block_lock(w25qxx_handle_t *handle, uint32_t addr)
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 5, NULL, 0);                          /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: individual block lock failed.\n");                         /* individual block lock failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: individual block lock failed.\n");                         /* individual block lock failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 4;                                                                                   /* return error */
             }
         }
@@ -6242,8 +6242,8 @@ uint8_t w25qxx_individual_block_lock(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* qspi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                  /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                  /* write enable failed */
+
                     return 1;                                                                               /* return error */
                 }
                 buf[0] = (addr >> 24) & 0xFF;                                                               /* 31 - 24 bits */
@@ -6254,8 +6254,8 @@ uint8_t w25qxx_individual_block_lock(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 4);                                              /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -6266,8 +6266,8 @@ uint8_t w25qxx_individual_block_lock(w25qxx_handle_t *handle, uint32_t addr)
                                            NULL, 0x00, 0x00);                                               /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: individual block lock failed.\n");                             /* individual block lock failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: individual block lock failed.\n");                             /* individual block lock failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
@@ -6280,19 +6280,19 @@ uint8_t w25qxx_individual_block_lock(w25qxx_handle_t *handle, uint32_t addr)
                                            NULL, 0x00, 0x00);                                               /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: individual block lock failed.\n");                             /* individual block lock failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: individual block lock failed.\n");                             /* individual block lock failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
+
             return 4;                                                                                       /* return error */
         }
     }
-    
+
     return 0;                                                                                               /* success return 0 */
 }
 
@@ -6312,16 +6312,16 @@ uint8_t w25qxx_individual_block_unlock(w25qxx_handle_t *handle, uint32_t addr)
 {
     uint8_t res;
     uint8_t buf[5];
-    
+
     if (handle == NULL)                                                                                     /* check handle */
     {
         return 2;                                                                                           /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                                /* check handle initialization */
     {
         return 3;                                                                                           /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                           /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                              /* enable dual quad spi */
@@ -6337,8 +6337,8 @@ uint8_t w25qxx_individual_block_unlock(w25qxx_handle_t *handle, uint32_t addr)
                                                    NULL, 0x00, 0x00);                                       /* qspi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                     buf[0] = (addr >> 24) & 0xFF;                                                           /* 31 - 24 bits */
@@ -6349,8 +6349,8 @@ uint8_t w25qxx_individual_block_unlock(w25qxx_handle_t *handle, uint32_t addr)
                                                    NULL, 0x00, 1);                                          /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -6361,8 +6361,8 @@ uint8_t w25qxx_individual_block_unlock(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: individual block unlock failed.\n");                       /* individual unblock lock failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: individual block unlock failed.\n");                       /* individual unblock lock failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -6375,15 +6375,15 @@ uint8_t w25qxx_individual_block_unlock(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: individual block unlock failed.\n");                       /* individual block unlock failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: individual block unlock failed.\n");                       /* individual block unlock failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 4;                                                                                   /* return error */
             }
         }
@@ -6397,8 +6397,8 @@ uint8_t w25qxx_individual_block_unlock(w25qxx_handle_t *handle, uint32_t addr)
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                     buf[0] = 0xC5;                                                                          /* write extended addr register command */
@@ -6406,8 +6406,8 @@ uint8_t w25qxx_individual_block_unlock(w25qxx_handle_t *handle, uint32_t addr)
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 2, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -6418,8 +6418,8 @@ uint8_t w25qxx_individual_block_unlock(w25qxx_handle_t *handle, uint32_t addr)
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 4, NULL, 0);                          /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: individual block unlock failed.\n");                       /* individual block unlock failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: individual block unlock failed.\n");                       /* individual block unlock failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -6433,15 +6433,15 @@ uint8_t w25qxx_individual_block_unlock(w25qxx_handle_t *handle, uint32_t addr)
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 5, NULL, 0);                          /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: individual block unlock failed.\n");                       /* individual block unlock failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: individual block unlock failed.\n");                       /* individual block unlock failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 4;                                                                                   /* return error */
             }
         }
@@ -6459,8 +6459,8 @@ uint8_t w25qxx_individual_block_unlock(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* qspi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                  /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                  /* write enable failed */
+
                     return 1;                                                                               /* return error */
                 }
                 buf[0] = (addr >> 24) & 0xFF;                                                               /* 31 - 24 bits */
@@ -6471,8 +6471,8 @@ uint8_t w25qxx_individual_block_unlock(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 4);                                              /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -6483,8 +6483,8 @@ uint8_t w25qxx_individual_block_unlock(w25qxx_handle_t *handle, uint32_t addr)
                                            NULL, 0x00, 0x00);                                               /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: individual block unlock failed.\n");                           /* individual unblock lock failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: individual block unlock failed.\n");                           /* individual unblock lock failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
@@ -6497,19 +6497,19 @@ uint8_t w25qxx_individual_block_unlock(w25qxx_handle_t *handle, uint32_t addr)
                                            NULL, 0x00, 0x00);                                               /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: individual block unlock failed.\n");                           /* individual block unlock failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: individual block unlock failed.\n");                           /* individual block unlock failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
+
             return 4;                                                                                       /* return error */
         }
     }
-    
+
     return 0;                                                                                               /* success return 0 */
 }
 
@@ -6530,16 +6530,16 @@ uint8_t w25qxx_read_block_lock(w25qxx_handle_t *handle, uint32_t addr, uint8_t *
 {
     uint8_t res;
     uint8_t buf[5];
-    
+
     if (handle == NULL)                                                                                     /* check handle */
     {
         return 2;                                                                                           /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                                /* check handle initialization */
     {
         return 3;                                                                                           /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                           /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                              /* enable dual quad spi */
@@ -6555,8 +6555,8 @@ uint8_t w25qxx_read_block_lock(w25qxx_handle_t *handle, uint32_t addr, uint8_t *
                                                    NULL, 0x00, 0x00);                                       /* qspi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                     buf[0] = (addr >> 24) & 0xFF;                                                           /* 31 - 24 bits */
@@ -6567,8 +6567,8 @@ uint8_t w25qxx_read_block_lock(w25qxx_handle_t *handle, uint32_t addr, uint8_t *
                                                    NULL, 0x00, 1);                                          /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -6579,8 +6579,8 @@ uint8_t w25qxx_read_block_lock(w25qxx_handle_t *handle, uint32_t addr, uint8_t *
                                                value, 1, 1);                                                /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: read block lock failed.\n");                               /* read block lock failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: read block lock failed.\n");                               /* read block lock failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -6593,15 +6593,15 @@ uint8_t w25qxx_read_block_lock(w25qxx_handle_t *handle, uint32_t addr, uint8_t *
                                                value, 1, 1);                                                /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: read block lock failed.\n");                               /* read block lock failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: read block lock failed.\n");                               /* read block lock failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 4;                                                                                   /* return error */
             }
         }
@@ -6615,8 +6615,8 @@ uint8_t w25qxx_read_block_lock(w25qxx_handle_t *handle, uint32_t addr, uint8_t *
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                     buf[0] = 0xC5;                                                                          /* write extended addr register command */
@@ -6624,8 +6624,8 @@ uint8_t w25qxx_read_block_lock(w25qxx_handle_t *handle, uint32_t addr, uint8_t *
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 2, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -6636,8 +6636,8 @@ uint8_t w25qxx_read_block_lock(w25qxx_handle_t *handle, uint32_t addr, uint8_t *
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 4, value, 1);                         /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: read block lock failed.\n");                               /* read block lock failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: read block lock failed.\n");                               /* read block lock failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -6651,15 +6651,15 @@ uint8_t w25qxx_read_block_lock(w25qxx_handle_t *handle, uint32_t addr, uint8_t *
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 5, value, 1);                         /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: read block lock failed.\n");                               /* read block lock failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: read block lock failed.\n");                               /* read block lock failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 4;                                                                                   /* return error */
             }
         }
@@ -6677,8 +6677,8 @@ uint8_t w25qxx_read_block_lock(w25qxx_handle_t *handle, uint32_t addr, uint8_t *
                                                NULL, 0x00, 0x00);                                           /* qspi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                  /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                  /* write enable failed */
+
                     return 1;                                                                               /* return error */
                 }
                 buf[0] = (addr >> 24) & 0xFF;                                                               /* 31 - 24 bits */
@@ -6689,8 +6689,8 @@ uint8_t w25qxx_read_block_lock(w25qxx_handle_t *handle, uint32_t addr, uint8_t *
                                                NULL, 0x00, 4);                                              /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -6701,8 +6701,8 @@ uint8_t w25qxx_read_block_lock(w25qxx_handle_t *handle, uint32_t addr, uint8_t *
                                            value, 1, 4);                                                    /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: read block lock failed.\n");                                   /* read block lock failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: read block lock failed.\n");                                   /* read block lock failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
@@ -6715,19 +6715,19 @@ uint8_t w25qxx_read_block_lock(w25qxx_handle_t *handle, uint32_t addr, uint8_t *
                                            value, 1, 4);                                                    /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: read block lock failed.\n");                                   /* read block lock failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: read block lock failed.\n");                                   /* read block lock failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
+
             return 4;                                                                                       /* return error */
         }
     }
-    
+
     return 0;                                                                                               /* success return 0 */
 }
 
@@ -6747,16 +6747,16 @@ uint8_t w25qxx_set_burst_with_wrap(w25qxx_handle_t *handle, w25qxx_burst_wrap_t 
 {
     uint8_t res;
     uint8_t buf[5];
-    
+
     if (handle == NULL)                                                              /* check handle */
     {
         return 2;                                                                    /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                         /* check handle initialization */
     {
         return 3;                                                                    /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                    /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                       /* enable dual quad spi */
@@ -6770,8 +6770,8 @@ uint8_t w25qxx_set_burst_with_wrap(w25qxx_handle_t *handle, w25qxx_burst_wrap_t 
                                            NULL, 0x00, 1);                           /* spi write read */
             if (res != 0)                                                            /* check result */
             {
-                handle->debug_print("w25qxx: set burst with wrap failed.\n");        /* set burst with wrap failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: set burst with wrap failed.\n");        /* set burst with wrap failed */
+
                 return 1;                                                            /* return error */
             }
         }
@@ -6785,19 +6785,19 @@ uint8_t w25qxx_set_burst_with_wrap(w25qxx_handle_t *handle, w25qxx_burst_wrap_t 
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 5, NULL, 0);       /* spi write read */
             if (res != 0)                                                            /* check result */
             {
-                handle->debug_print("w25qxx: set burst with wrap failed.\n");        /* set burst with wrap failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: set burst with wrap failed.\n");        /* set burst with wrap failed */
+
                 return 1;                                                            /* return error */
             }
         }
     }
     else
     {
-        handle->debug_print("w25qxx: qspi can't use this function.\n");              /* qspi can't use this function */
-       
+        handle->debug_print(handle->extra, "w25qxx: qspi can't use this function.\n");              /* qspi can't use this function */
+
         return 4;                                                                    /* return error */
     }
-    
+
     return 0;                                                                        /* success return 0 */
 }
 
@@ -6823,7 +6823,7 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
     uint8_t buf[4];
     uint8_t out[2];
     uint16_t id;
-    
+
     if (handle == NULL)                                                                    /* check handle */
     {
         return 2;                                                                          /* return error */
@@ -6834,42 +6834,42 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
     }
     if (handle->spi_qspi_init == NULL)                                                     /* check spi_qspi_init */
     {
-        handle->debug_print("w25qxx: spi_qspi_init is null.\n");                           /* spi_qspi_init is null */
-       
+        handle->debug_print(handle->extra, "w25qxx: spi_qspi_init is null.\n");                           /* spi_qspi_init is null */
+
         return 3;                                                                          /* return error */
     }
     if (handle->spi_qspi_deinit == NULL)                                                   /* check spi_qspi_deinit */
     {
-        handle->debug_print("w25qxx: spi_qspi_deinit is null.\n");                         /* spi_qspi_deinit is null */
-       
+        handle->debug_print(handle->extra, "w25qxx: spi_qspi_deinit is null.\n");                         /* spi_qspi_deinit is null */
+
         return 3;                                                                          /* return error */
     }
     if (handle->spi_qspi_write_read == NULL)                                               /* check spi_qspi_write_read */
     {
-        handle->debug_print("w25qxx: spi_qspi_write_read is null.\n");                     /* spi_qspi_write_read is null */
-       
+        handle->debug_print(handle->extra, "w25qxx: spi_qspi_write_read is null.\n");                     /* spi_qspi_write_read is null */
+
         return 3;                                                                          /* return error */
     }
     if (handle->delay_us == NULL)                                                          /* check delay_us */
     {
-        handle->debug_print("w25qxx: delay_us is null.\n");                                /* delay_us is null */
-       
+        handle->debug_print(handle->extra, "w25qxx: delay_us is null.\n");                                /* delay_us is null */
+
         return 3;                                                                          /* return error */
     }
     if (handle->delay_ms == NULL)                                                          /* check delay_ms */
     {
-        handle->debug_print("w25qxx: delay_ms is null.\n");                                /* delay_ms is null */
-       
+        handle->debug_print(handle->extra, "w25qxx: delay_ms is null.\n");                                /* delay_ms is null */
+
         return 3;                                                                          /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                          /* spi interface */
     {
         res = handle->spi_qspi_init();                                                     /* spi init */
         if (res != 0)                                                                      /* check result */
         {
-            handle->debug_print("w25qxx: spi init failed.\n");                             /* spi init failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: spi init failed.\n");                             /* spi init failed */
+
             return 1;                                                                      /* return error */
         }
         if (handle->dual_quad_spi_enable != 0)                                             /* enable dual quad spi */
@@ -6882,9 +6882,9 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                                           (uint8_t *)&id, 1, 1);                           /* spi write read */
             if (res != 0)                                                                  /* check result */
             {
-                handle->debug_print("w25qxx: release power down failed.\n");               /* release power down failed */
-                (void)handle->spi_qspi_deinit();                                           /** deinit */
-                
+                handle->debug_print(handle->extra, "w25qxx: release power down failed.\n");               /* release power down failed */
+                (void)handle->spi_qspi_deinit(handle->extra);                                           /** deinit */
+
                 return 1;                                                                  /* return error */
             }
             res = a_w25qxx_qspi_write_read(handle,
@@ -6895,9 +6895,9 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                                            NULL, 0x00, 0x00);                              /* spi write read */
             if (res != 0)                                                                  /* check result */
             {
-                handle->debug_print("w25qxx: enable reset failed.\n");                     /* enable reset failed */
-                (void)handle->spi_qspi_deinit();                                           /** deinit */
-                
+                handle->debug_print(handle->extra, "w25qxx: enable reset failed.\n");                     /* enable reset failed */
+                (void)handle->spi_qspi_deinit(handle->extra);                                           /** deinit */
+
                 return 7;                                                                  /* return error */
             }
             res = a_w25qxx_qspi_write_read(handle,
@@ -6908,12 +6908,12 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                                            NULL, 0x00, 0x00);                              /* spi write read */
             if (res != 0)                                                                  /* check result */
             {
-                handle->debug_print("w25qxx: reset device failed.\n");                     /* reset device failed */
-                (void)handle->spi_qspi_deinit();                                           /** deinit */
-                
+                handle->debug_print(handle->extra, "w25qxx: reset device failed.\n");                     /* reset device failed */
+                (void)handle->spi_qspi_deinit(handle->extra);                                           /** deinit */
+
                 return 7;                                                                  /* return error */
             }
-            handle->delay_ms(10);                                                          /* delay 10 ms */
+            handle->delay_ms(handle->extra, 10);                                                          /* delay 10 ms */
             res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_READ_MANUFACTURER, 1,
                                            0x00000000, 1, 3,
                                            0x00000000, 0x00, 0x00,
@@ -6921,17 +6921,17 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                                           (uint8_t *)out, 2, 1);                           /* qspi write read */
             if (res != 0)                                                                  /* check result */
             {
-                handle->debug_print("w25qxx: get manufacturer device id failed.\n");       /* get manufacturer device id failed */
-                (void)handle->spi_qspi_deinit();                                           /** deinit */
-                
+                handle->debug_print(handle->extra, "w25qxx: get manufacturer device id failed.\n");       /* get manufacturer device id failed */
+                (void)handle->spi_qspi_deinit(handle->extra);                                           /** deinit */
+
                 return 1;                                                                  /* return error */
             }
             id = (uint16_t)out[0] << 8 | out[1];                                           /* set id */
             if (id != handle->type)                                                        /* check id */
             {
-                handle->debug_print("w25qxx: id is invalid.\n");                           /* id is invalid */
-                (void)handle->spi_qspi_deinit();                                           /** deinit */
-                
+                handle->debug_print(handle->extra, "w25qxx: id is invalid.\n");                           /* id is invalid */
+                (void)handle->spi_qspi_deinit(handle->extra);                                           /** deinit */
+
                 return 6;                                                                  /* return error */
             }
             if (handle->type >= W25Q256)
@@ -6943,9 +6943,9 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                                                NULL, 0, 0);                                /* qspi write read */
                 if (res != 0)                                                              /* check result */
                 {
-                    handle->debug_print("w25qxx: enter 3 byte mode failed.\n");            /* enter 3 byte mode failed */
-                    (void)handle->spi_qspi_deinit();                                       /** deinit */
-                    
+                    handle->debug_print(handle->extra, "w25qxx: enter 3 byte mode failed.\n");            /* enter 3 byte mode failed */
+                    (void)handle->spi_qspi_deinit(handle->extra);                                       /** deinit */
+
                     return 1;                                                              /* return error */
                 }
             }
@@ -6960,30 +6960,30 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                                          (uint8_t *)&id, 1);                               /* spi write read */
             if (res != 0)                                                                  /* check result */
             {
-                handle->debug_print("w25qxx: release power down failed.\n");               /* release power down failed */
-                (void)handle->spi_qspi_deinit();                                           /** deinit */
-                
+                handle->debug_print(handle->extra, "w25qxx: release power down failed.\n");               /* release power down failed */
+                (void)handle->spi_qspi_deinit(handle->extra);                                           /** deinit */
+
                 return 1;                                                                  /* return error */
             }
             buf[0] = W25QXX_COMMAND_ENABLE_RESET;                                          /* enable reset command */
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);             /* spi write read */
             if (res != 0)                                                                  /* check result */
             {
-                handle->debug_print("w25qxx: enable reset failed.\n");                     /* enable reset failed */
-                (void)handle->spi_qspi_deinit();                                           /** deinit */
-                
+                handle->debug_print(handle->extra, "w25qxx: enable reset failed.\n");                     /* enable reset failed */
+                (void)handle->spi_qspi_deinit(handle->extra);                                           /** deinit */
+
                 return 7;                                                                  /* return error */
             }
             buf[0] = W25QXX_COMMAND_RESET_DEVICE;                                          /* reset device command */
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);             /* spi write read */
             if (res != 0)                                                                  /* check result */
             {
-                handle->debug_print("w25qxx: reset device failed.\n");                     /* reset device failed */
-                (void)handle->spi_qspi_deinit();                                           /** deinit */
-                
+                handle->debug_print(handle->extra, "w25qxx: reset device failed.\n");                     /* reset device failed */
+                (void)handle->spi_qspi_deinit(handle->extra);                                           /** deinit */
+
                 return 7;                                                                  /* return error */
             }
-            handle->delay_ms(10);                                                          /* delay 10 ms */
+            handle->delay_ms(handle->extra, 10);                                                          /* delay 10 ms */
             buf[0] = W25QXX_COMMAND_READ_MANUFACTURER;                                     /* read manufacturer command */
             buf[1] = 0x00;                                                                 /* dummy */
             buf[2] = 0x00;                                                                 /* dummy */
@@ -6992,17 +6992,17 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                                          (uint8_t *)out, 2);                               /* spi write read */
             if (res != 0)                                                                  /* check result */
             {
-                handle->debug_print("w25qxx: get manufacturer device id failed.\n");       /* get manufacturer device id failed */
-                (void)handle->spi_qspi_deinit();                                           /** deinit */
-                
+                handle->debug_print(handle->extra, "w25qxx: get manufacturer device id failed.\n");       /* get manufacturer device id failed */
+                (void)handle->spi_qspi_deinit(handle->extra);                                           /** deinit */
+
                 return 4;                                                                  /* return error */
             }
             id = (uint16_t)out[0] << 8 | out[1];                                           /* set id */
             if (id != handle->type)                                                        /* check id */
             {
-                handle->debug_print("w25qxx: id is invalid.\n");                           /* id is invalid */
-                (void)handle->spi_qspi_deinit();                                           /** deinit */
-                
+                handle->debug_print(handle->extra, "w25qxx: id is invalid.\n");                           /* id is invalid */
+                (void)handle->spi_qspi_deinit(handle->extra);                                           /** deinit */
+
                 return 6;                                                                  /* return error */
             }
             if (handle->type >= W25Q256)
@@ -7011,9 +7011,9 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);         /* spi write read */
                 if (res != 0)                                                              /* check result */
                 {
-                    handle->debug_print("w25qxx: set address mode failed.\n");             /* set address mode failed */
-                    (void)handle->spi_qspi_deinit();                                       /** deinit */
-                    
+                    handle->debug_print(handle->extra, "w25qxx: set address mode failed.\n");             /* set address mode failed */
+                    (void)handle->spi_qspi_deinit(handle->extra);                                       /** deinit */
+
                     return 8;                                                              /* return error */
                 }
             }
@@ -7024,8 +7024,8 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
         res = handle->spi_qspi_init();                                                     /* qspi init */
         if (res != 0)                                                                      /* check result */
         {
-            handle->debug_print("w25qxx: qspi init failed.\n");                            /* qspi init failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: qspi init failed.\n");                            /* qspi init failed */
+
             return 1;                                                                      /* return error */
         }
         res = a_w25qxx_qspi_write_read(handle,
@@ -7036,9 +7036,9 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                                       (uint8_t *)&id, 1, 1);                               /* spi write read */
         if (res != 0)                                                                      /* check result */
         {
-            handle->debug_print("w25qxx: release power down failed.\n");                   /* release power down failed */
-            (void)handle->spi_qspi_deinit();                                               /** deinit */
-            
+            handle->debug_print(handle->extra, "w25qxx: release power down failed.\n");                   /* release power down failed */
+            (void)handle->spi_qspi_deinit(handle->extra);                                               /** deinit */
+
             return 1;                                                                      /* return error */
         }
         res = a_w25qxx_qspi_write_read(handle,
@@ -7049,9 +7049,9 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0x00);                                  /* spi write read */
         if (res != 0)                                                                      /* check result */
         {
-            handle->debug_print("w25qxx: enable reset failed.\n");                         /* enable reset failed */
-            (void)handle->spi_qspi_deinit();                                               /** deinit */
-            
+            handle->debug_print(handle->extra, "w25qxx: enable reset failed.\n");                         /* enable reset failed */
+            (void)handle->spi_qspi_deinit(handle->extra);                                               /** deinit */
+
             return 7;                                                                      /* return error */
         }
         res = a_w25qxx_qspi_write_read(handle,
@@ -7062,12 +7062,12 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0x00);                                  /* spi write read */
         if (res != 0)                                                                      /* check result */
         {
-            handle->debug_print("w25qxx: reset device failed.\n");                         /* reset device failed */
-            (void)handle->spi_qspi_deinit();                                               /** deinit */
-            
+            handle->debug_print(handle->extra, "w25qxx: reset device failed.\n");                         /* reset device failed */
+            (void)handle->spi_qspi_deinit(handle->extra);                                               /** deinit */
+
             return 7;                                                                      /* return error */
         }
-        handle->delay_ms(10);                                                              /* delay 10 ms */
+        handle->delay_ms(handle->extra, 10);                                                              /* delay 10 ms */
         res = a_w25qxx_qspi_write_read(handle,
                                        W25QXX_COMMAND_READ_STATUS_REG2, 1,
                                        0x00000000, 0x00, 0x00,
@@ -7076,9 +7076,9 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                                       (uint8_t *)&status, 1, 1);                           /* spi write read */
         if (res != 0)                                                                      /* check result */
         {
-            handle->debug_print("w25qxx: read status 2 failed.\n");                        /* read status 2 failed */
-            (void)handle->spi_qspi_deinit();                                               /** deinit */
-            
+            handle->debug_print(handle->extra, "w25qxx: read status 2 failed.\n");                        /* read status 2 failed */
+            (void)handle->spi_qspi_deinit(handle->extra);                                               /** deinit */
+
             return 5;                                                                      /* return error */
         }
         if ((status & 0x02) == 0)                                                          /* check status */
@@ -7091,9 +7091,9 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                                            NULL, 0x00, 0x00);                              /* spi write read */
             if (res != 0)                                                                  /* check result */
             {
-                handle->debug_print("w25qxx: set sr write enable failed.\n");              /* set sr write enable failed */
-                (void)handle->spi_qspi_deinit();                                           /** deinit */
-                
+                handle->debug_print(handle->extra, "w25qxx: set sr write enable failed.\n");              /* set sr write enable failed */
+                (void)handle->spi_qspi_deinit(handle->extra);                                           /** deinit */
+
                 return 5;                                                                  /* return error */
             }
             res = a_w25qxx_qspi_write_read(handle,
@@ -7104,9 +7104,9 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                                            NULL, 0x00, 0x00);                              /* spi write read */
             if (res != 0)                                                                  /* check result */
             {
-                handle->debug_print("w25qxx: write status 2 failed.\n");                   /* write status 2 failed */
-                (void)handle->spi_qspi_deinit();                                           /** deinit */
-                
+                handle->debug_print(handle->extra, "w25qxx: write status 2 failed.\n");                   /* write status 2 failed */
+                (void)handle->spi_qspi_deinit(handle->extra);                                           /** deinit */
+
                 return 5;                                                                  /* return error */
             }
         }
@@ -7118,12 +7118,12 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0x00);                                  /* spi write read */
         if (res != 0)                                                                      /* check result */
         {
-            handle->debug_print("w25qxx: enter qspi failed.\n");                           /* enter qspi failed */
-            (void)handle->spi_qspi_deinit();                                               /** deinit */
-            
+            handle->debug_print(handle->extra, "w25qxx: enter qspi failed.\n");                           /* enter qspi failed */
+            (void)handle->spi_qspi_deinit(handle->extra);                                               /** deinit */
+
             return 5;                                                                      /* return error */
         }
-        handle->delay_ms(10);                                                              /* delay 10 ms */
+        handle->delay_ms(handle->extra, 10);                                                              /* delay 10 ms */
         buf[0] = 3 << 4;                                                                   /* set 8 read dummy */
         handle->param = buf[0];                                                            /* set param */
         handle->dummy = 8;                                                                 /* set dummy */
@@ -7134,9 +7134,9 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                                        NULL, 0x00, 4);                                     /* qspi write read */
         if (res != 0)                                                                      /* check result */
         {
-            handle->debug_print("w25qxx: set read parameters failed.\n");                  /* set read parameters failed */
-            (void)handle->spi_qspi_deinit();                                               /** deinit */
-            
+            handle->debug_print(handle->extra, "w25qxx: set read parameters failed.\n");                  /* set read parameters failed */
+            (void)handle->spi_qspi_deinit(handle->extra);                                               /** deinit */
+
             return 5;                                                                      /* return error */
         }
         res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_READ_MANUFACTURER, 4,
@@ -7146,17 +7146,17 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                                       (uint8_t *)out, 2, 4);                               /* qspi write read */
         if (res != 0)                                                                      /* check result */
         {
-            handle->debug_print("w25qxx: get manufacturer device id failed.\n");           /* get manufacturer device id failed */
-            (void)handle->spi_qspi_deinit();                                               /** deinit */
-            
+            handle->debug_print(handle->extra, "w25qxx: get manufacturer device id failed.\n");           /* get manufacturer device id failed */
+            (void)handle->spi_qspi_deinit(handle->extra);                                               /** deinit */
+
             return 1;                                                                      /* return error */
         }
         id = (uint16_t)out[0] << 8 | out[1];                                               /* set id */
         if (id != handle->type)                                                            /* check id */
         {
-            handle->debug_print("w25qxx: id is invalid.\n");                               /* id is invalid */
-            (void)handle->spi_qspi_deinit();                                               /** deinit */
-            
+            handle->debug_print(handle->extra, "w25qxx: id is invalid.\n");                               /* id is invalid */
+            (void)handle->spi_qspi_deinit(handle->extra);                                               /** deinit */
+
             return 6;                                                                      /* return error */
         }
         if (handle->type >= W25Q256)
@@ -7168,16 +7168,16 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
                                            NULL, 0, 0);                                    /* qspi write read */
             if (res != 0)                                                                  /* check result */
             {
-                handle->debug_print("w25qxx: enter 3 byte mode failed.\n");                /* enter 3 byte mode failed */
-                (void)handle->spi_qspi_deinit();                                           /** deinit */
-                
+                handle->debug_print(handle->extra, "w25qxx: enter 3 byte mode failed.\n");                /* enter 3 byte mode failed */
+                (void)handle->spi_qspi_deinit(handle->extra);                                           /** deinit */
+
                 return 1;                                                                  /* return error */
             }
         }
     }
     handle->address_mode = W25QXX_ADDRESS_MODE_3_BYTE;                                     /* set address mode */
     handle->inited = 1;                                                                    /* initialize inited */
-    
+
     return 0;                                                                              /* success return 0 */
 }
 
@@ -7196,11 +7196,11 @@ uint8_t w25qxx_deinit(w25qxx_handle_t *handle)
 {
     uint8_t res;
     uint8_t buf[1];
-    
+
     if (handle == NULL)                                                            /* check handle */
     {
         return 2;                                                                  /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                       /* check handle initialization */
     {
         return 3;                                                                  /* return error */
@@ -7217,8 +7217,8 @@ uint8_t w25qxx_deinit(w25qxx_handle_t *handle)
                                            NULL, 0x00, 0);                         /* spi write read */
             if (res != 0)                                                          /* check result */
             {
-                handle->debug_print("w25qxx: power down failed.\n");               /* power down failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: power down failed.\n");               /* power down failed */
+
                 return 4;                                                          /* return error */
             }
         }
@@ -7229,8 +7229,8 @@ uint8_t w25qxx_deinit(w25qxx_handle_t *handle)
                                           1, NULL, 0);                             /* spi write read */
             if (res != 0)                                                          /* check result */
             {
-                handle->debug_print("w25qxx: power down failed.\n");               /* power down failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: power down failed.\n");               /* power down failed */
+
                 return 4;                                                          /* return error */
             }
         }
@@ -7244,11 +7244,11 @@ uint8_t w25qxx_deinit(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0);                             /* spi write read */
         if (res != 0)                                                              /* check result */
         {
-            handle->debug_print("w25qxx: exit qspi mode failed.\n");               /* exit qspi mode failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: exit qspi mode failed.\n");               /* exit qspi mode failed */
+
             return 1;                                                              /* return error */
         }
-        handle->delay_ms(10);                                                      /* delay 10 ms */
+        handle->delay_ms(handle->extra, 10);                                                      /* delay 10 ms */
         res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_POWER_DOWN, 1,
                                        0x00000000, 0x00, 0x00,
                                        0x00000000, 0x00, 0x00,
@@ -7256,19 +7256,19 @@ uint8_t w25qxx_deinit(w25qxx_handle_t *handle)
                                        NULL, 0x00, 0);                             /* spi write read */
         if (res != 0)                                                              /* check result */
         {
-            handle->debug_print("w25qxx: power down failed.\n");                   /* power down failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: power down failed.\n");                   /* power down failed */
+
             return 4;                                                              /* return error */
         }
     }
-    res = handle->spi_qspi_deinit();                                               /* qspi deinit */
+    res = handle->spi_qspi_deinit(handle->extra);                                               /* qspi deinit */
     if (res != 0)                                                                  /* check result */
     {
-        handle->debug_print("w25qxx: spi or qspi deinit failed.\n");               /* spi or qspi deinit failed */
-       
+        handle->debug_print(handle->extra, "w25qxx: spi or qspi deinit failed.\n");               /* spi or qspi deinit failed */
+
         return 1;                                                                  /* return error */
     }
-    
+
     return 0;                                                                      /* success return 0 */
 }
 
@@ -7290,16 +7290,16 @@ uint8_t w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint3
 {
     uint8_t res;
     uint8_t buf[6];
-    
+
     if (handle == NULL)                                                                                   /* check handle */
     {
         return 2;                                                                                         /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                              /* check handle initialization */
     {
         return 3;                                                                                         /* return error */
     }
-    
+
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                                         /* spi interface */
     {
         if (handle->dual_quad_spi_enable != 0)                                                            /* enable dual quad spi */
@@ -7315,8 +7315,8 @@ uint8_t w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint3
                                                    NULL, 0x00, 0x00);                                     /* qspi write read */
                     if (res != 0)                                                                         /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                            /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                            /* write enable failed */
+
                         return 1;                                                                         /* return error */
                     }
                     buf[0] = (addr >> 24) & 0xFF;                                                         /* 31 - 24 bits */
@@ -7327,8 +7327,8 @@ uint8_t w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint3
                                                    NULL, 0x00, 1);                                        /* spi write read */
                     if (res != 0)                                                                         /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");            /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");            /* write extended addr register failed */
+
                         return 1;                                                                         /* return error */
                     }
                 }
@@ -7339,8 +7339,8 @@ uint8_t w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint3
                                                data, len, 1);                                             /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: fast read failed.\n");                                   /* fast read failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                   /* fast read failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
@@ -7353,15 +7353,15 @@ uint8_t w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint3
                                                data, len, 1);                                             /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: fast read failed.\n");                                   /* fast read failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                   /* fast read failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                /* address mode is invalid */
+
                 return 4;                                                                                 /* return error */
             }
         }
@@ -7375,8 +7375,8 @@ uint8_t w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint3
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                    /* spi write read */
                     if (res != 0)                                                                         /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                            /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                            /* write enable failed */
+
                         return 1;                                                                         /* return error */
                     }
                     buf[0] = 0xC5;                                                                        /* write extended addr register command */
@@ -7384,8 +7384,8 @@ uint8_t w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint3
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 2, NULL, 0);                    /* spi write read */
                     if (res != 0)                                                                         /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");            /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");            /* write extended addr register failed */
+
                         return 1;                                                                         /* return error */
                     }
                 }
@@ -7397,8 +7397,8 @@ uint8_t w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint3
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 5, (uint8_t *)data, (uint32_t)len); /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: fast read failed.\n");                                   /* fast read failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                   /* fast read failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
@@ -7414,15 +7414,15 @@ uint8_t w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint3
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 6, (uint8_t *)data, (uint32_t)len); /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: fast read failed.\n");                                   /* fast read failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                   /* fast read failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                /* address mode is invalid */
+
                 return 4;                                                                                 /* return error */
             }
         }
@@ -7440,8 +7440,8 @@ uint8_t w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint3
                                                NULL, 0x00, 0x00);                                         /* qspi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                /* write enable failed */
+
                     return 1;                                                                             /* return error */
                 }
                 buf[0] = (addr >> 24) & 0xFF;                                                             /* 31 - 24 bits */
@@ -7452,8 +7452,8 @@ uint8_t w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint3
                                                NULL, 0x00, 4);                                            /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
@@ -7464,8 +7464,8 @@ uint8_t w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint3
                                            data, len, 4);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: fast read failed.\n");                                       /* fast read failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                       /* fast read failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
@@ -7478,19 +7478,19 @@ uint8_t w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint3
                                            data, len, 4);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: fast read failed.\n");                                       /* fast read failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                       /* fast read failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
+
             return 4;                                                                                     /* return error */
         }
     }
-    
+
     return 0;                                                                                             /* success return 0 */
 }
 
@@ -7525,8 +7525,8 @@ static uint8_t a_w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                                                    NULL, 0x00, 0x00);                                     /* qspi write read */
                     if (res != 0)                                                                         /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                            /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                            /* write enable failed */
+
                         return 1;                                                                         /* return error */
                     }
                     buf[0] = (addr >> 24) & 0xFF;                                                         /* 31 - 24 bits */
@@ -7537,8 +7537,8 @@ static uint8_t a_w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                                                    NULL, 0x00, 1);                                        /* spi write read */
                     if (res != 0)                                                                         /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");            /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");            /* write extended addr register failed */
+
                         return 1;                                                                         /* return error */
                     }
                 }
@@ -7549,8 +7549,8 @@ static uint8_t a_w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                                                data, len, 1);                                             /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: fast read failed.\n");                                   /* fast read failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                   /* fast read failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
@@ -7563,15 +7563,15 @@ static uint8_t a_w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                                                data, len, 1);                                             /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: fast read failed.\n");                                   /* fast read failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                   /* fast read failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                /* address mode is invalid */
+
                 return 1;                                                                                 /* return error */
             }
         }
@@ -7585,8 +7585,8 @@ static uint8_t a_w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                    /* spi write read */
                     if (res != 0)                                                                         /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                            /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                            /* write enable failed */
+
                         return 1;                                                                         /* return error */
                     }
                     buf[0] = 0xC5;                                                                        /* write extended addr register command */
@@ -7594,8 +7594,8 @@ static uint8_t a_w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 2, NULL, 0);                    /* spi write read */
                     if (res != 0)                                                                         /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");            /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");            /* write extended addr register failed */
+
                         return 1;                                                                         /* return error */
                     }
                 }
@@ -7607,8 +7607,8 @@ static uint8_t a_w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 5, (uint8_t *)data, (uint32_t)len); /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: fast read failed.\n");                                   /* fast read failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                   /* fast read failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
@@ -7623,15 +7623,15 @@ static uint8_t a_w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 6, (uint8_t *)data, (uint32_t)len); /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: fast read failed.\n");                                   /* fast read failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                   /* fast read failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                /* address mode is invalid */
+
                 return 1;                                                                                 /* return error */
             }
         }
@@ -7649,8 +7649,8 @@ static uint8_t a_w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                                                NULL, 0x00, 0x00);                                         /* qspi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                /* write enable failed */
+
                     return 1;                                                                             /* return error */
                 }
                 buf[0] = (addr >> 24) & 0xFF;                                                             /* 31 - 24 bits */
@@ -7661,8 +7661,8 @@ static uint8_t a_w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                                                NULL, 0x00, 4);                                            /* spi write read */
                 if (res != 0)                                                                             /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                /* write extended addr register failed */
+
                     return 1;                                                                             /* return error */
                 }
             }
@@ -7673,8 +7673,8 @@ static uint8_t a_w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                                            data, len, 4);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: fast read failed.\n");                                       /* fast read failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                       /* fast read failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
@@ -7687,19 +7687,19 @@ static uint8_t a_w25qxx_read(w25qxx_handle_t *handle, uint32_t addr, uint8_t *da
                                            data, len, 4);                                                 /* spi write read */
             if (res != 0)                                                                                 /* check result */
             {
-                handle->debug_print("w25qxx: fast read failed.\n");                                       /* fast read failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: fast read failed.\n");                                       /* fast read failed */
+
                 return 1;                                                                                 /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                    /* address mode is invalid */
+
             return 1;                                                                                     /* return error */
         }
     }
-    
+
     return 0;                                                                                             /* success return 0 */
 }
 
@@ -7730,8 +7730,8 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                                            NULL, 0x00, 0x00);                                               /* qspi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                      /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                      /* write enable failed */
+
                 return 1;                                                                                   /* return error */
             }
             if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                         /* 3 address mode */
@@ -7746,8 +7746,8 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                                                    NULL, 0x00, 1);                                          /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                     res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_WRITE_ENABLE, 1,
@@ -7757,8 +7757,8 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                                                    NULL, 0x00, 0x00);                                       /* qspi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -7769,8 +7769,8 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: sector erase 4k failed.\n");                               /* sector erase 4k failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: sector erase 4k failed.\n");                               /* sector erase 4k failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -7783,18 +7783,18 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: sector erase 4k failed.\n");                               /* sector erase 4k failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: sector erase 4k failed.\n");                               /* sector erase 4k failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 1;                                                                                   /* return error */
             }
-            
+
             timeout = 400;                                                                                  /* max 400 ms */
             while (timeout != 0)                                                                            /* check timeout */
             {
@@ -7805,8 +7805,8 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                                               (uint8_t *)&status, 1, 1);                                    /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                   /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                   /* get status1 failed */
+
                     return 1;                                                                               /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                                /* check status */
@@ -7814,12 +7814,12 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                     break;                                                                                  /* break */
                 }
                 timeout--;                                                                                  /* timeout-- */
-                handle->delay_ms(1);                                                                        /* delay 1 ms */
+                handle->delay_ms(handle->extra, 1);                                                                        /* delay 1 ms */
             }
             if (timeout == 0)
             {
-                handle->debug_print("w25qxx: sector erase 4k timeout.\n");                                  /* sector erase 4k timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: sector erase 4k timeout.\n");                                  /* sector erase 4k timeout */
+
                 return 1;                                                                                   /* return error */
             }
         }
@@ -7829,8 +7829,8 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                              /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                      /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                      /* write enable failed */
+
                 return 1;                                                                                   /* return error */
             }
             if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                         /* 3 address mode */
@@ -7842,16 +7842,16 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 2, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                     buf[0] = W25QXX_COMMAND_WRITE_ENABLE;                                                   /* write enable command */
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -7862,8 +7862,8 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 4, NULL, 0);                          /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: sector erase 4k failed.\n");                               /* sector erase 4k failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: sector erase 4k failed.\n");                               /* sector erase 4k failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -7877,18 +7877,18 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 5, NULL, 0);                          /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: sector erase 4k failed.\n");                               /* sector erase 4k failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: sector erase 4k failed.\n");                               /* sector erase 4k failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 1;                                                                                   /* return error */
             }
-            
+
             timeout = 400;                                                                                  /* max 400 ms */
             while (timeout != 0)                                                                            /* check timeout */
             {
@@ -7896,8 +7896,8 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, (uint8_t *)&status, 1);            /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                   /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                   /* get status1 failed */
+
                     return 1;                                                                               /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                                /* check status */
@@ -7905,12 +7905,12 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                     break;                                                                                  /* break */
                 }
                 timeout--;                                                                                  /* timeout-- */
-                handle->delay_ms(1);                                                                        /* delay 1 ms */
+                handle->delay_ms(handle->extra, 1);                                                                        /* delay 1 ms */
             }
             if (timeout == 0)
             {
-                handle->debug_print("w25qxx: sector erase 4k timeout.\n");                                  /* sector erase 4k timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: sector erase 4k timeout.\n");                                  /* sector erase 4k timeout */
+
                 return 1;                                                                                   /* return error */
             }
         }
@@ -7924,8 +7924,8 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                                        NULL, 0x00, 0x00);                                                   /* qspi write read */
         if (res != 0)                                                                                       /* check result */
         {
-            handle->debug_print("w25qxx: write enable failed.\n");                                          /* write enable failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                          /* write enable failed */
+
             return 1;                                                                                       /* return error */
         }
         if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                             /* 3 address mode */
@@ -7940,8 +7940,8 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 4);                                              /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
+
                     return 1;                                                                               /* return error */
                 }
                 res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_WRITE_ENABLE, 4,
@@ -7951,8 +7951,8 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                                                NULL, 0x00, 0x00);                                           /* qspi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                  /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                  /* write enable failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -7963,8 +7963,8 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                                            NULL, 0x00, 0x00);                                               /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: sector erase 4k failed.\n");                                   /* sector erase 4k failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: sector erase 4k failed.\n");                                   /* sector erase 4k failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
@@ -7977,18 +7977,18 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                                            NULL, 0x00, 0x00);                                               /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: sector erase 4k failed.\n");                                   /* sector erase 4k failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: sector erase 4k failed.\n");                                   /* sector erase 4k failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
+
             return 1;                                                                                       /* return error */
         }
-        
+
         timeout = 400;                                                                                      /* max 400 ms */
         while (timeout != 0)                                                                                /* check timeout */
         {
@@ -7999,8 +7999,8 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                                           (uint8_t *)&status, 1, 4);                                        /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: get status1 failed.\n");                                       /* get status1 failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                       /* get status1 failed */
+
                 return 1;                                                                                   /* return error */
             }
             if ((status & 0x01) == 0x00)                                                                    /* check status */
@@ -8008,16 +8008,16 @@ static uint8_t a_w25qxx_erase_sector(w25qxx_handle_t *handle, uint32_t addr)
                 break;                                                                                      /* break */
             }
             timeout--;                                                                                      /* timeout-- */
-            handle->delay_ms(1);                                                                            /* delay 1 ms */
+            handle->delay_ms(handle->extra, 1);                                                                            /* delay 1 ms */
         }
         if (timeout == 0)
         {
-            handle->debug_print("w25qxx: sector erase 4k timeout.\n");                                      /* sector erase 4k timeout */
-           
+            handle->debug_print(handle->extra, "w25qxx: sector erase 4k timeout.\n");                                      /* sector erase 4k timeout */
+
             return 1;                                                                                       /* return error */
         }
     }
-    
+
     return 0;                                                                                               /* success return 0 */
 }
 
@@ -8050,8 +8050,8 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                                            NULL, 0x00, 0x00);                                               /* qspi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                      /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                      /* write enable failed */
+
                 return 1;                                                                                   /* return error */
             }
             if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                         /* 3 address mode */
@@ -8066,8 +8066,8 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                                                    NULL, 0x00, 1);                                          /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                     res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_WRITE_ENABLE, 1,
@@ -8077,8 +8077,8 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                                                    NULL, 0x00, 0x00);                                       /* qspi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -8089,8 +8089,8 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                                                NULL, 0x00, 1);                                              /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: page program failed.\n");                                  /* page program failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: page program failed.\n");                                  /* page program failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -8103,18 +8103,18 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                                                NULL, 0x00, 1);                                              /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: page program failed.\n");                                  /* page program failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: page program failed.\n");                                  /* page program failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 1;                                                                                   /* return error */
             }
-            
+
             timeout = 3 * 100;                                                                              /* max 3 ms */
             while (timeout != 0)                                                                            /* check timeout */
             {
@@ -8125,8 +8125,8 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                                               (uint8_t *)&status, 1, 1);                                    /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: page program failed.\n");                                  /* page program failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: page program failed.\n");                                  /* page program failed */
+
                     return 1;                                                                               /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                                /* check status */
@@ -8134,12 +8134,12 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                     break;                                                                                  /* break */
                 }
                 timeout--;                                                                                  /* timeout-- */
-                handle->delay_us(10);                                                                       /* delay 10 us */
+                handle->delay_us(handle->extra, 10);                                                                       /* delay 10 us */
             }
             if (timeout == 0)
             {
-                handle->debug_print("w25qxx: page program timeout.\n");                                     /* page program timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: page program timeout.\n");                                     /* page program timeout */
+
                 return 1;                                                                                   /* return error */
             }
         }
@@ -8149,8 +8149,8 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
             res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                              /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: write enable failed.\n");                                      /* write enable failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                      /* write enable failed */
+
                 return 1;                                                                                   /* return error */
             }
             if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                         /* 3 address mode */
@@ -8162,16 +8162,16 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 2, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");              /* write extended addr register failed */
+
                         return 1;                                                                           /* return error */
                     }
                     buf[0] = W25QXX_COMMAND_WRITE_ENABLE;                                                   /* write enable command */
                     res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, NULL, 0);                      /* spi write read */
                     if (res != 0)                                                                           /* check result */
                     {
-                        handle->debug_print("w25qxx: write enable failed.\n");                              /* write enable failed */
-                       
+                        handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                              /* write enable failed */
+
                         return 1;                                                                           /* return error */
                     }
                 }
@@ -8183,8 +8183,8 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)handle->buf, 4 + len, NULL, 0);            /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: page program failed.\n");                                  /* page program failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: page program failed.\n");                                  /* page program failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -8200,18 +8200,18 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)handle->buf, 5 + len, NULL, 0);            /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: page program failed.\n");                                  /* page program failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: page program failed.\n");                                  /* page program failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
             else
             {
-                handle->debug_print("w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
-               
+                handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                  /* address mode is invalid */
+
                 return 1;                                                                                   /* return error */
             }
-            
+
             timeout = 3 * 100;                                                                              /* max 3 ms */
             while (timeout != 0)                                                                            /* check timeout */
             {
@@ -8219,8 +8219,8 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                 res = a_w25qxx_spi_write_read(handle, (uint8_t *)buf, 1, (uint8_t *)&status, 1);            /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: get status1 failed.\n");                                   /* get status1 failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: get status1 failed.\n");                                   /* get status1 failed */
+
                     return 1;                                                                               /* return error */
                 }
                 if ((status & 0x01) == 0x00)                                                                /* check status */
@@ -8228,12 +8228,12 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                     break;                                                                                  /* break */
                 }
                 timeout--;                                                                                  /* timeout-- */
-                handle->delay_us(10);                                                                       /* delay 10 us */
+                handle->delay_us(handle->extra, 10);                                                                       /* delay 10 us */
             }
             if (timeout == 0)
             {
-                handle->debug_print("w25qxx: page program timeout.\n");                                     /* page program timeout */
-               
+                handle->debug_print(handle->extra, "w25qxx: page program timeout.\n");                                     /* page program timeout */
+
                 return 1;                                                                                   /* return error */
             }
         }
@@ -8247,8 +8247,8 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                                        NULL, 0x00, 0x00);                                                   /* qspi write read */
         if (res != 0)                                                                                       /* check result */
         {
-            handle->debug_print("w25qxx: write enable failed.\n");                                          /* write enable failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                          /* write enable failed */
+
             return 1;                                                                                       /* return error */
         }
         if (handle->address_mode == W25QXX_ADDRESS_MODE_3_BYTE)                                             /* 3 address mode */
@@ -8263,8 +8263,8 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                                                NULL, 0x00, 4);                                              /* spi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write extended addr register failed.\n");                  /* write extended addr register failed */
+
                     return 1;                                                                               /* return error */
                 }
                 res = a_w25qxx_qspi_write_read(handle, W25QXX_COMMAND_WRITE_ENABLE, 4,
@@ -8274,8 +8274,8 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                                                NULL, 0x00, 0x00);                                           /* qspi write read */
                 if (res != 0)                                                                               /* check result */
                 {
-                    handle->debug_print("w25qxx: write enable failed.\n");                                  /* write enable failed */
-                   
+                    handle->debug_print(handle->extra, "w25qxx: write enable failed.\n");                                  /* write enable failed */
+
                     return 1;                                                                               /* return error */
                 }
             }
@@ -8286,8 +8286,8 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                                            NULL, 0x00, 4);                                                  /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: page program failed.\n");                                      /* page program failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: page program failed.\n");                                      /* page program failed */
+
                   return 1;                                                                                 /* return error */
             }
         }
@@ -8300,18 +8300,18 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                                            NULL, 0x00, 4);                                                  /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: page program failed.\n");                                      /* page program failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: page program failed.\n");                                      /* page program failed */
+
                 return 1;                                                                                   /* return error */
             }
         }
         else
         {
-            handle->debug_print("w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
-           
+            handle->debug_print(handle->extra, "w25qxx: address mode is invalid.\n");                                      /* address mode is invalid */
+
             return 1;                                                                                       /* return error */
         }
-        
+
         timeout = 3 * 100;                                                                                  /* max 3 ms */
         while (timeout != 0)                                                                                /* check timeout */
         {
@@ -8322,8 +8322,8 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                                           (uint8_t *)&status, 1, 4);                                        /* spi write read */
             if (res != 0)                                                                                   /* check result */
             {
-                handle->debug_print("w25qxx: page program failed.\n");                                      /* page program failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: page program failed.\n");                                      /* page program failed */
+
                 return 1;                                                                                   /* return error */
             }
             if ((status & 0x01) == 0x00)                                                                    /* check status */
@@ -8331,16 +8331,16 @@ static uint8_t a_w25qxx_page_program(w25qxx_handle_t *handle, uint32_t addr, uin
                 break;                                                                                      /* break */
             }
             timeout--;                                                                                      /* timeout-- */
-            handle->delay_us(10);                                                                           /* delay 10 us */
+            handle->delay_us(handle->extra, 10);                                                                           /* delay 10 us */
         }
         if (timeout == 0)
         {
-            handle->debug_print("w25qxx: page program timeout.\n");                                         /* page program timeout */
-           
+            handle->debug_print(handle->extra, "w25qxx: page program timeout.\n");                                         /* page program timeout */
+
             return 1;                                                                                       /* return error */
         }
     }
-    
+
     return 0;                                                                                               /* success return 0 */
 }
 
@@ -8359,19 +8359,19 @@ static uint8_t a_w25qxx_write_no_check(w25qxx_handle_t *handle, uint32_t addr, u
 {
     uint8_t res;
     uint16_t page_remain;
-    
+
     page_remain = 256 - addr % 256;                                         /* get remain */
     if (len <= page_remain)                                                 /* check length */
     {
         page_remain = (uint16_t)len;                                        /* page remain */
     }
     while( 1)                                                               /* loop */
-    { 
+    {
         res = a_w25qxx_page_program(handle, addr, data, page_remain);       /* page program */
         if (res != 0)
         {
-            handle->debug_print("w25qxx: page program failed.\n");          /* page program failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: page program failed.\n");          /* page program failed */
+
             return 1;                                                       /* return error */
         }
         if (len == page_remain)                                             /* check length */
@@ -8393,7 +8393,7 @@ static uint8_t a_w25qxx_write_no_check(w25qxx_handle_t *handle, uint32_t addr, u
             }
         }
     }
-    
+
     return 0;                                                               /* success return 0 */
 }
 
@@ -8419,11 +8419,11 @@ uint8_t w25qxx_write(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint
     uint32_t sec_off;
     uint32_t sec_remain;
     uint32_t i;
-    
+
     if (handle == NULL)                                                                        /* check handle */
     {
         return 2;                                                                              /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                                   /* check handle initialization */
     {
         return 3;                                                                              /* return error */
@@ -8437,12 +8437,12 @@ uint8_t w25qxx_write(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint
         sec_remain = len;                                                                      /* set remain */
     }
     while(1)                                                                                   /* loop */
-    {    
+    {
         res = a_w25qxx_read(handle, sec_pos * 4096, handle->buf_4k, 4096);                     /* read 4k data */
         if (res != 0)
         {
-            handle->debug_print("w25qxx: read failed.\n");                                     /* read failed */
-           
+            handle->debug_print(handle->extra, "w25qxx: read failed.\n");                                     /* read failed */
+
             return 4;                                                                          /* return error */
         }
         for (i = 0; i< sec_remain; i++)                                                        /* sec_remain length */
@@ -8457,8 +8457,8 @@ uint8_t w25qxx_write(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint
             res = a_w25qxx_erase_sector(handle, sec_pos * 4096);                               /* erase sector */
             if (res != 0)
             {
-                handle->debug_print("w25qxx: erase sector failed.\n");                         /* erase sector failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: erase sector failed.\n");                         /* erase sector failed */
+
                 return 5;                                                                      /* return error */
             }
             for (i = 0; i<sec_remain; i++)                                                     /* sec_remain length */
@@ -8468,8 +8468,8 @@ uint8_t w25qxx_write(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint
             res = a_w25qxx_write_no_check(handle, sec_pos * 4096, handle->buf_4k, 4096);       /* write data no check */
             if (res != 0)                                                                      /* check result */
             {
-                handle->debug_print("w25qxx: write failed.\n");                                /* write failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write failed.\n");                                /* write failed */
+
                 return 1;                                                                      /* return error */
             }
         }
@@ -8478,11 +8478,11 @@ uint8_t w25qxx_write(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint
             res = a_w25qxx_write_no_check(handle, addr, data, sec_remain);                     /* write data */
             if (res != 0)                                                                      /* check result */
             {
-                handle->debug_print("w25qxx: write failed.\n");                                /* write failed */
-               
+                handle->debug_print(handle->extra, "w25qxx: write failed.\n");                                /* write failed */
+
                 return 1;                                                                      /* return error */
             }
-        }    
+        }
         if (len == sec_remain)                                                                 /* check length length*/
         {
             break;                                                                             /* break loop */
@@ -8504,7 +8504,7 @@ uint8_t w25qxx_write(w25qxx_handle_t *handle, uint32_t addr, uint8_t *data, uint
             }
         }
     }
-    
+
     return 0;                                                                                  /* success return 0 */
 }
 
@@ -8538,16 +8538,16 @@ uint8_t w25qxx_write_read_reg(w25qxx_handle_t *handle, uint8_t instruction, uint
                               uint8_t dummy, uint8_t *in_buf, uint32_t in_len,
                               uint8_t *out_buf, uint32_t out_len, uint8_t data_line)
 {
-    
+
     if (handle == NULL)                                                          /* check handle */
     {
         return 2;                                                                /* return error */
-    }   
+    }
     if (handle->inited != 1)                                                     /* check handle initialization */
     {
         return 3;                                                                /* return error */
     }
-    
+
     return a_w25qxx_qspi_write_read(handle, instruction, instruction_line,
                                     address, address_line, address_len,
                                     alternate, alternate_line, alternate_len,
@@ -8569,7 +8569,7 @@ uint8_t w25qxx_info(w25qxx_info_t *info)
     {
         return 2;                                                   /* return error */
     }
-    
+
     memset(info, 0, sizeof(w25qxx_info_t));                         /* initialize w25qxx info structure */
     strncpy(info->chip_name, CHIP_NAME, 32);                        /* copy chip name */
     strncpy(info->manufacturer_name, MANUFACTURER_NAME, 32);        /* copy manufacturer name */
@@ -8580,6 +8580,6 @@ uint8_t w25qxx_info(w25qxx_info_t *info)
     info->temperature_max = TEMPERATURE_MAX;                        /* set minimal temperature */
     info->temperature_min = TEMPERATURE_MIN;                        /* set maximum temperature */
     info->driver_version = DRIVER_VERSION;                          /* set driver version */
-    
+
     return 0;                                                       /* success return 0 */
 }
