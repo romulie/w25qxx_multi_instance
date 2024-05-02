@@ -13,6 +13,8 @@
  */
 static uint8_t a_spi_cs_init(void *descr)
 {
+
+#if 0
     GPIO_InitTypeDef GPIO_InitStruct;
 
     /* enable cs gpio clock */
@@ -24,8 +26,10 @@ static uint8_t a_spi_cs_init(void *descr)
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+#endif
 
     return 0;
+
 }
 
 /**
@@ -35,10 +39,11 @@ static uint8_t a_spi_cs_init(void *descr)
  * @return    status code
  *            - 0 success
  *            - 1 init failed
- * @note      SCLK is PA5, MOSI is PA7 MISO is PA6 and CS is PA4
+ * @note     
  */
-uint8_t spi_init(void *descr, spi_mode_t mode)
+uint8_t spi_init(void *descr, enum spi_transfer_mode mode)
 {
+#if 0
     g_spi_handle.Instance = SPI1;
     g_spi_handle.Init.Mode = SPI_MODE_MASTER;
     g_spi_handle.Init.Direction = SPI_DIRECTION_2LINES;
@@ -77,6 +82,7 @@ uint8_t spi_init(void *descr, spi_mode_t mode)
     {
         return 1;
     }
+#endif
 
     return a_spi_cs_init(descr);
 }
@@ -91,6 +97,7 @@ uint8_t spi_init(void *descr, spi_mode_t mode)
  */
 uint8_t spi_deinit(void *descr)
 {
+#if 0
     /* cs deinit */
     HAL_GPIO_DeInit(GPIOA, GPIO_PIN_4);
 
@@ -99,6 +106,7 @@ uint8_t spi_deinit(void *descr)
     {
         return 1;
     }
+#endif
 
     return 0;
 }
@@ -118,48 +126,38 @@ uint8_t spi_deinit(void *descr)
  */
 uint8_t spi_write_read(void *descr, uint8_t *in_buf, uint32_t in_len, uint8_t *out_buf, uint32_t out_len)
 {
-    uint8_t res;
-
-    // extract CS pin
-    // extract SPI instance
+    // extract SPI instance, extract CS pin
+    W25qxx_ASF_CustomDescriptor_s extraDescriptor = *(W25qxx_ASF_CustomDescriptor_s*)descr;
+    struct spi_m_sync_descriptor spiInstance = *extraDescriptor.spiInstance;        //  = SPI_0
+    const uint8_t chipSelectPin = extraDescriptor.chipSelectPin;                    // = SPI_0_CS
+    //struct usart_async_descriptor usartInstance = *extraDescriptor.usartInstance; // = USART_0 not used here
 
     /* set cs low */
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_RESET);
+    gpio_set_pin_level(chipSelectPin, false);
 
-    /* if in_len > 0 */
     if (in_len > 0)
     {
         /* transmit the input buffer */
-        res = HAL_SPI_Transmit(&g_spi_handle, in_buf, in_len, 1000);
-        if (res != HAL_OK)
-        {
-            /* set cs high */
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
-
-            return 1;
-        }
+        struct io_descriptor *io;
+        spi_m_sync_get_io_descriptor(&spiInstance, &io);
+        spi_m_sync_enable(&spiInstance);
+        io_write(io, in_buf, in_len);
     }
 
-    /* if out_len > 0 */
     if (out_len > 0)
     {
         /* transmit to the output buffer */
-        res = HAL_SPI_Receive(&g_spi_handle, out_buf, out_len, 1000);
-        if (res != HAL_OK)
-        {
-            /* set cs high */
-            HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
-
-            return 1;
-        }
+        struct io_descriptor *io;
+        spi_m_sync_get_io_descriptor(&spiInstance, &io);
+        spi_m_sync_enable(&spiInstance);
+        io_read(io, out_buf, out_len);
     }
 
     /* set cs high */
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, GPIO_PIN_SET);
+    gpio_set_pin_level(chipSelectPin, true);
 
     return 0;
 }
-
 
 
 

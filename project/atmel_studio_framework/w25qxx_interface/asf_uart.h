@@ -2,7 +2,6 @@
 #define ASF_UART_H
 
 #include <atmel_start.h>
-#include "asf_w25qxx_custom_descriptor.h"
 
 #ifdef __cplusplus
 extern "C"{
@@ -74,24 +73,27 @@ uint16_t uart_flush(void);
  */
 uint16_t uart_print(const char *const fmt, ...);
 
+#if 0
 /**
  * @brief  uart get the handle
  * @return points to a uart handle
  * @note   none
  */
 UART_HandleTypeDef* uart_get_handle(void);
+#endif
 
 /**
  * @brief uart set tx done
  * @note  none
  */
-void uart_set_tx_done(void);
+void uart_set_tx_done(const struct usart_async_descriptor *const descr);
 
 /**
- * @brief uart irq handler
+ * @brief uart irq handlers
  * @note  none
  */
-void uart_irq_handler(void);
+void uart_irq_handler(const struct usart_async_descriptor *const descr);
+void uart_err_cb(const struct usart_async_descriptor *const descr);
 
 /**
  * @}

@@ -41,6 +41,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "asf_w25qxx_custom_descriptor.h"
+
 #ifdef __cplusplus
 extern "C"{
 #endif

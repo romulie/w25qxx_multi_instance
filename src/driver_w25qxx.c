@@ -111,7 +111,7 @@
  */
 static uint8_t a_w25qxx_spi_write_read(w25qxx_handle_t *handle, uint8_t *in_buf, uint32_t in_len, uint8_t *out_buf, uint32_t out_len)
 {
-    if (handle->spi_qspi_write_read(handle->extra, 0x00, 0x00000000, 0x00, 0x00,                /* write read data */
+    if (handle->spi_qspi_write_read(handle->extra, 0x00, 0x00, 0x00000000, 0x00, 0x00,                /* write read data */
                                     0x00000000, 0x00, 0x00,
                                     0x00, in_buf, in_len, out_buf, out_len, 1) != 0)
     {
@@ -923,7 +923,7 @@ uint8_t w25qxx_set_status1(w25qxx_handle_t *handle, uint8_t status)
                     break;                                                                               /* break */
                 }
                 timeout--;                                                                               /* timeout-- */
-                handle->delay_ms(handle->extra, handle->extra, 1);                                                                     /* delay 1 ms */
+                handle->delay_ms(handle->extra, 1);                                                                     /* delay 1 ms */
             }
             if (timeout == 0)                                                                            /* check timeout */
             {
@@ -973,7 +973,7 @@ uint8_t w25qxx_set_status1(w25qxx_handle_t *handle, uint8_t status)
                     break;                                                                               /* break */
                 }
                 timeout--;                                                                               /* timeout-- */
-                handle->delay_ms(handle->extra, handle->extra, 1);                                                                     /* delay 1 ms */
+                handle->delay_ms(handle->extra, 1);                                                                     /* delay 1 ms */
             }
             if (timeout == 0)                                                                            /* check timeout */
             {
@@ -1032,7 +1032,7 @@ uint8_t w25qxx_set_status1(w25qxx_handle_t *handle, uint8_t status)
                 break;                                                                                   /* break */
             }
             timeout--;                                                                                   /* timeout-- */
-            handle->delay_ms(handle->extra, handle->extra, 1);                                                                         /* delay 1 ms */
+            handle->delay_ms(handle->extra, 1);                                                                         /* delay 1 ms */
         }
         if (timeout == 0)                                                                                /* check timeout */
         {
@@ -1122,7 +1122,7 @@ uint8_t w25qxx_set_status2(w25qxx_handle_t *handle, uint8_t status)
                     break;                                                                               /* break */
                 }
                 timeout--;                                                                               /* timeout-- */
-                handle->delay_ms(handle->extra, handle->extra, 1);                                                                     /* delay 1 ms */
+                handle->delay_ms(handle->extra, 1);                                                                     /* delay 1 ms */
             }
             if (timeout == 0)                                                                            /* check timeout */
             {
@@ -1172,7 +1172,7 @@ uint8_t w25qxx_set_status2(w25qxx_handle_t *handle, uint8_t status)
                     break;                                                                               /* break */
                 }
                 timeout--;                                                                               /* timeout-- */
-                handle->delay_ms(handle->extra, handle->extra, 1);                                                                     /* delay 1 ms */
+                handle->delay_ms(handle->extra, 1);                                                                     /* delay 1 ms */
             }
             if (timeout == 0)                                                                            /* check timeout */
             {
@@ -3038,7 +3038,7 @@ uint8_t w25qxx_erase_security_register(w25qxx_handle_t *handle, w25qxx_security_
                     break;                                                                                    /* break */
                 }
                 timeout--;                                                                                    /* timeout-- */
-                handle->delay_us(handle->extra, handle->extra, 10);                                                                         /* delay 10 us */
+                handle->delay_us(handle->extra, 10);                                                                         /* delay 10 us */
             }
             if (timeout == 0)
             {
@@ -3109,7 +3109,7 @@ uint8_t w25qxx_erase_security_register(w25qxx_handle_t *handle, w25qxx_security_
                     break;                                                                                    /* break */
                 }
                 timeout--;                                                                                    /* timeout-- */
-                handle->delay_us(handle->extra, handle->extra, 10);                                                                         /* delay 10 us */
+                handle->delay_us(handle->extra, 10);                                                                         /* delay 10 us */
             }
             if (timeout == 0)
             {
@@ -6865,7 +6865,7 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
 
     if (handle->spi_qspi == W25QXX_INTERFACE_SPI)                                          /* spi interface */
     {
-        res = handle->spi_qspi_init();                                                     /* spi init */
+        res = handle->spi_qspi_init(handle->extra);                                                     /* spi init */
         if (res != 0)                                                                      /* check result */
         {
             handle->debug_print(handle->extra, "w25qxx: spi init failed.\n");                             /* spi init failed */
@@ -7021,7 +7021,7 @@ uint8_t w25qxx_init(w25qxx_handle_t *handle)
     }
     else
     {
-        res = handle->spi_qspi_init();                                                     /* qspi init */
+        res = handle->spi_qspi_init(handle->extra);                                                     /* qspi init */
         if (res != 0)                                                                      /* check result */
         {
             handle->debug_print(handle->extra, "w25qxx: qspi init failed.\n");                            /* qspi init failed */

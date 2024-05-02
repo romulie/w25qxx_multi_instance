@@ -35,8 +35,12 @@
  */
 
 #include "driver_w25qxx_advance.h"
+#include "asf_w25qxx_custom_descriptor.h"
 
 static w25qxx_handle_t gs_handle;        /**< w25qxx handle */
+
+// TODO: add config defines for the following
+extern W25qxx_ASF_CustomDescriptor_s extraDescriptor;
 
 /**
  * @brief     advance example init
@@ -60,12 +64,13 @@ uint8_t w25qxx_advance_init(w25qxx_type_t type, w25qxx_interface_t interface, w2
     DRIVER_W25QXX_LINK_DELAY_MS(&gs_handle, w25qxx_interface_delay_ms);
     DRIVER_W25QXX_LINK_DELAY_US(&gs_handle, w25qxx_interface_delay_us);
     DRIVER_W25QXX_LINK_DEBUG_PRINT(&gs_handle, w25qxx_interface_debug_print);
+    DRIVER_W25QXX_LINK_EXTRA_VOID_PTR(&gs_handle, (void*)&extraDescriptor);
     
     /* set chip type */
     res = w25qxx_set_type(&gs_handle, type);
     if (res != 0)
     {
-        w25qxx_interface_debug_print("w25qxx: set type failed.\n");
+        w25qxx_interface_debug_print(&(gs_handle.extra), "w25qxx: set type failed.\n");
        
         return 1;
     }
@@ -74,7 +79,7 @@ uint8_t w25qxx_advance_init(w25qxx_type_t type, w25qxx_interface_t interface, w2
     res = w25qxx_set_interface(&gs_handle, interface);
     if (res != 0)
     {
-        w25qxx_interface_debug_print("w25qxx: set interface failed.\n");
+        w25qxx_interface_debug_print(&(gs_handle.extra), "w25qxx: set interface failed.\n");
        
         return 1;
     }
@@ -83,7 +88,7 @@ uint8_t w25qxx_advance_init(w25qxx_type_t type, w25qxx_interface_t interface, w2
     res = w25qxx_set_dual_quad_spi(&gs_handle, dual_quad_spi_enable);
     if (res != 0)
     {
-        w25qxx_interface_debug_print("w25qxx: set dual quad spi failed.\n");
+        w25qxx_interface_debug_print(&(gs_handle.extra), "w25qxx: set dual quad spi failed.\n");
         (void)w25qxx_deinit(&gs_handle);
        
         return 1;
@@ -93,7 +98,7 @@ uint8_t w25qxx_advance_init(w25qxx_type_t type, w25qxx_interface_t interface, w2
     res = w25qxx_init(&gs_handle);
     if (res != 0)
     {
-        w25qxx_interface_debug_print("w25qxx: init failed.\n");
+        w25qxx_interface_debug_print(&(gs_handle.extra), "w25qxx: init failed.\n");
        
         return 1;
     }
@@ -104,7 +109,7 @@ uint8_t w25qxx_advance_init(w25qxx_type_t type, w25qxx_interface_t interface, w2
             res = w25qxx_set_address_mode(&gs_handle, W25QXX_ADDRESS_MODE_4_BYTE);
             if (res != 0)
             {
-                w25qxx_interface_debug_print("w25qxx: set address mode failed.\n");
+                w25qxx_interface_debug_print(&(gs_handle.extra), "w25qxx: set address mode failed.\n");
                 (void)w25qxx_deinit(&gs_handle);
                
                 return 1;

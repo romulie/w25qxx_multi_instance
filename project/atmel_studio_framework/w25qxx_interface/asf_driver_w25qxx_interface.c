@@ -77,7 +77,8 @@ uint8_t w25qxx_interface_spi_qspi_write_read(void *descr, uint8_t instruction, u
  */
 void w25qxx_interface_delay_ms(void *descr, uint32_t ms)
 {
-    delay_ms(descr, ms);
+    (void)descr;
+    delay_ms(ms);
 }
 
 /**
@@ -88,7 +89,8 @@ void w25qxx_interface_delay_ms(void *descr, uint32_t ms)
  */
 void w25qxx_interface_delay_us(void *descr, uint32_t us)
 {
-    delay_us(descr, us);
+    (void)descr;
+    delay_us(us);
 }
 
 /**
@@ -99,6 +101,8 @@ void w25qxx_interface_delay_us(void *descr, uint32_t us)
  */
 void w25qxx_interface_debug_print(void *descr, const char *const fmt, ...)
 {
+    (void)descr;
+
     char str[256];
     uint16_t len;
     va_list args;
@@ -109,5 +113,5 @@ void w25qxx_interface_debug_print(void *descr, const char *const fmt, ...)
     va_end(args);
 
     len = strlen((char *)str);
-    (void)uart_write(descr, (uint8_t *)str, len);
+    (void)uart_write((uint8_t *)str, len);
 }

@@ -2,6 +2,7 @@
 #define ASF_SPI_H
 
 #include <atmel_start.h>
+#include "hpl_spi.h"
 #include "asf_w25qxx_custom_descriptor.h"
 
 #ifdef __cplusplus
@@ -15,26 +16,15 @@
  */
 
 /**
- * @brief spi mode enumeration definition
- */
-typedef enum
-{
-    SPI_MODE_0 = 0x00,        /**< mode 0 */
-    SPI_MODE_1 = 0x01,        /**< mode 1 */
-    SPI_MODE_2 = 0x02,        /**< mode 2 */
-    SPI_MODE_3 = 0x03,        /**< mode 3 */
-} spi_mode_t;
-
-/**
  * @brief     spi bus init
  * @param[in] *descr custom descriptor
- * @param[in] mode is the spi mode
+ * @param[in] mode is the spi_transfer_mode
  * @return    status code
  *            - 0 success
  *            - 1 init failed
- * @note      SCLK is PA5, MOSI is PA7 MISO is PA6 and CS is PA4
+ * @note      SCLK is PB09, MOSI is PB08 MISO is PB14 and CS is PB07
  */
-uint8_t spi_init(void *descr, spi_mode_t mode);
+uint8_t spi_init(void *descr, enum spi_transfer_mode mode);
 
 /**
  * @brief  spi bus deinit
@@ -44,7 +34,7 @@ uint8_t spi_init(void *descr, spi_mode_t mode);
  *         - 1 deinit failed
  * @note   none
  */
-uint8_t spi_deinit(void *descr, void);
+uint8_t spi_deinit(void *descr);
 
 /**
  * @brief      spi bus write read
